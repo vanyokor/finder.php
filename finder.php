@@ -5,9 +5,8 @@ define('STARTER', 'run');
 
 // Самоудаление скрипта через сутки
 if (time() > (filectime(__FILE__) + 86400)) {
-    echo 'file timeout';
     @unlink(__FILE__);
-    exit();
+    exit('file timeout');
 }
 // Самоудаление скрипта по get запросу
 if (isset($_GET['delete'])) {
