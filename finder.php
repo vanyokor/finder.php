@@ -355,7 +355,7 @@ if (isset($_POST['file_extension'])) {
 }
 
 // Защита от межсайтового скриптинга
-header('Content-Security-Policy: default-src \'self\'; style-src \'self\' \'unsafe-inline\'; script-src \'self\'; connect-src \'self\'');
+header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 
