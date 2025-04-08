@@ -1,9 +1,12 @@
 <?php
+/*
+Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта
+*/
+
 // GET параметр, который необходимо передать в скрипт, для его запуска
 define('STARTER', 'run');
 
-
-// Самоудаление скрипта через сутки
+// Самоудаление скрипта, при попытке запуска, через сутки
 if (time() > (filectime(__FILE__) + 86400)) {
     @unlink(__FILE__);
     exit('file timeout');
@@ -38,7 +41,18 @@ function show_result($filename, $matches)
 
 
 /*
-    Поиск подстроки в содержимом файла
+    Поиск подстроки в тексте
+*/
+function searching($content, $needle, $pos)
+{
+    // TODO: использовать callback
+    global $case_sensitivity;
+    return $case_sensitivity ? strpos($content, $needle, $pos) : stripos($content, $needle, $pos);
+}
+
+
+/*
+    Поиск в содержимом файла
 */
 function find_substr($content, $filename, $needle)
 {
@@ -48,7 +62,7 @@ function find_substr($content, $filename, $needle)
     $pos = 0;
     $len = strlen($needle);
     $matches = array();
-    while (($pos = stripos($content, $needle, $pos)) !== false) {
+    while (($pos = searching($content, $needle, $pos)) !== false) {
         if ($pos < $startpos) {
             $startpos = $pos;
         }
@@ -78,7 +92,7 @@ function list_dir($directory)
     $result = array();
     if (is_readable($directory)) {
         if ($d = opendir($directory)) {
-            while($fname = readdir($d)) {
+            while ($fname = readdir($d)) {
                 if ($fname == '.' || $fname == '..') {
                     continue;
                 }
@@ -300,12 +314,28 @@ $file_extensions = array(
     'all',
 );
 
+// Режимы сканирования
+$mode = array(
+    'default',
+    'case sensitive',
+    'show only folder names',
+);
+
+// Выбранный режим сканирования
+$cur_mode = 0;
+
+if (isset($_POST['mode']) && $_POST['mode'] > 0 && $_POST['mode'] <= count($mode)) {
+    // TODO: снизить количество жонглирований типами
+    $cur_mode = (int) $_POST['mode'];
+}
+
 // Максимальная глубина вложенности
 $max_depth = 12;
 
 // Выбранная глубина вложенности
 $cur_depth = $max_depth;
 
+// Текущая сканиуемая глубина
 $scan_depth = 1;
 
 // Выбор глубины вложенности через форму
@@ -317,10 +347,17 @@ if (isset($_POST['cur_depth'])) {
     unset($selected);
 }
 
+// Чувствительность к регистру
+$case_sensitivity = false;
+
+if ($cur_mode == 1) {
+    $case_sensitivity = true;
+}
+
 // Отобразить отсканированные директории без чтения файлов
 $show_only_folders = false;
 
-if (isset($_POST['show_only_folders']) && $_POST['show_only_folders'] == '1') {
+if ($cur_mode == 2) {
     $show_only_folders = true;
 }
 
@@ -391,6 +428,20 @@ unset($file_extensions);
 <p> don't forget to <?=is_writable(__FILE__) ? '<a href="?delete">delete</a>' : 'delete' ?> this script from server</p>
 <details>
 <summary>Advanced settings</summary>
+<h5> Scan mode: 
+<select name="mode">
+<?php
+// Поле выбора режима сканирования
+foreach ($mode as $key => $name) {
+    echo '<option value="',$key,'"';
+    if ($cur_mode == $key) {
+        echo ' selected';
+    }
+    echo '>',$name,'</option>';
+}
+?>
+</select>
+</h5>
 <h5> Max depth: 
 <select name="cur_depth">
 <?php
@@ -407,9 +458,6 @@ unset($max_depth);
 ?>
 </select> folders
 </h5>
-<h5>Show only folder names: 
-<input type="checkbox" name="show_only_folders" value="1" <?php if ($show_only_folders){echo 'checked';} ?>>
-</h5>
 </details>
 </form>
 <?php
@@ -422,7 +470,7 @@ if ($show_only_folders) {
     } else {
         echo '<p>Scan completed</p>';
     }
-}else if ($search_str) {
+} elseif ($search_str) {
     // Запрос должен содержать более 3 и менее 50 символов
     $search_str_len = strlen($search_str);
     if ($search_str_len > 3) {
