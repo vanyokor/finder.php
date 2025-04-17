@@ -45,9 +45,8 @@ function show_result($filename, $matches)
 */
 function searching($content, $needle, $pos)
 {
-    // TODO: использовать callback
-    global $case_sensitivity;
-    return $case_sensitivity ? strpos($content, $needle, $pos) : stripos($content, $needle, $pos);
+    global $search_func_name;
+    return call_user_func($search_func_name, $content, $needle, $pos);
 }
 
 
@@ -324,9 +323,12 @@ $mode = array(
 // Выбранный режим сканирования
 $cur_mode = 0;
 
-if (isset($_POST['mode']) && $_POST['mode'] > 0 && $_POST['mode'] <= count($mode)) {
-    // TODO: снизить количество жонглирований типами
-    $cur_mode = (int) $_POST['mode'];
+if (isset($_POST['mode'])) {
+    $selected = (int) $_POST['mode'];
+    if (($selected > 0) && ($selected < count($mode))) {
+        $cur_mode = $selected;
+    }
+    unset($selected);
 }
 
 // Максимальная глубина вложенности
@@ -348,10 +350,10 @@ if (isset($_POST['cur_depth'])) {
 }
 
 // Чувствительность к регистру
-$case_sensitivity = false;
+$search_func_name = 'stripos';
 
 if ($cur_mode == 1) {
-    $case_sensitivity = true;
+    $search_func_name = 'strpos';
 }
 
 // Отобразить отсканированные директории без чтения файлов
