@@ -2,6 +2,7 @@
 /*
 Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта
 */
+define('VERSION', '1.1');
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 define('STARTER', 'run');
@@ -240,6 +241,22 @@ function escape_str($text)
     return $text;
 }
 
+
+/*
+    Получение настройки с POST запроса или возврат значения по умолчанию
+*/
+function read_post_or_default($name, $default = 0, $max_value = 1)
+{
+    if (isset($_POST[$name])) {
+        $selected = (int) $_POST[$name];
+        if (($selected > 0) && ($selected < $max_value)) {
+            return $selected;
+        }
+    }
+    return $default;
+}
+
+
 // исключить из поиска директории
 $ignore_dir = array(
     "./.git",
@@ -310,7 +327,7 @@ $file_extensions = array(
     '.html',
     '.tpl',
     '.twig',
-    'all',
+    'all', // не удалять, запускает поиск по всем файлам
 );
 
 // Режимы сканирования
@@ -321,47 +338,22 @@ $mode = array(
 );
 
 // Выбранный режим сканирования
-$cur_mode = 0;
-
-if (isset($_POST['mode'])) {
-    $selected = (int) $_POST['mode'];
-    if (($selected > 0) && ($selected < count($mode))) {
-        $cur_mode = $selected;
-    }
-    unset($selected);
-}
+$cur_mode = read_post_or_default('mode', 0, count($mode));
 
 // Максимальная глубина вложенности
 $max_depth = 12;
 
 // Выбранная глубина вложенности
-$cur_depth = $max_depth;
+$cur_depth = read_post_or_default('cur_depth', $max_depth, $max_depth);
 
 // Текущая сканиуемая глубина
 $scan_depth = 1;
 
-// Выбор глубины вложенности через форму
-if (isset($_POST['cur_depth'])) {
-    $selected = (int) $_POST['cur_depth'];
-    if (($selected > 0) && ($selected < $max_depth)) {
-        $cur_depth = $selected;
-    }
-    unset($selected);
-}
-
 // Чувствительность к регистру
-$search_func_name = 'stripos';
-
-if ($cur_mode == 1) {
-    $search_func_name = 'strpos';
-}
+$search_func_name = $cur_mode == 1 ? 'strpos' : 'stripos';
 
 // Отобразить отсканированные директории без чтения файлов
-$show_only_folders = false;
-
-if ($cur_mode == 2) {
-    $show_only_folders = true;
-}
+$show_only_folders = $cur_mode == 2;
 
 // запуск таймера, чтобы скрипт не сканировал больше минуты
 $start_time = time();
@@ -372,26 +364,16 @@ if (!empty($_POST['search_str'])) {
     $search_str = $_POST['search_str'];
 }
 
-// При старте, выбирается первое расширение из списка
-$file_extension = $file_extensions[0];
+// Выбор расширения файла
+$file_extension_id = read_post_or_default('file_extension', 0, count($file_extensions));
+$file_extension = $file_extensions[$file_extension_id];
 
 // Флаг поиска во всех файлах
-$search_in_all = false;
+$search_in_all = $file_extension_id == (count($file_extensions) - 1);
+unset($file_extension_id);
 
 // Флаг, прерван ли поиск из-за таймаута
 $interrupted = false;
-
-// Выбор расширения файла через форму
-if (isset($_POST['file_extension'])) {
-    $selected_id = (int) $_POST['file_extension'];
-    if (($selected_id > 0) && array_key_exists($selected_id, $file_extensions)) {
-        $file_extension = $file_extensions[$selected_id];
-        if ($file_extensions[$selected_id] === 'all') {
-            $search_in_all = true;
-        }
-    }
-    unset($selected_id);
-}
 
 // Защита от межсайтового скриптинга
 header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
@@ -405,7 +387,7 @@ ini_set('max_execution_time', '60');
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8"><title>finder</title><meta name="robots" content="noindex, nofollow"/>
+<meta charset="UTF-8"><title>finder v<?=VERSION?></title><meta name="robots" content="noindex, nofollow"/>
 <style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}
 </style>
 </head>
