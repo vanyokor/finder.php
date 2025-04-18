@@ -29,6 +29,23 @@ if (!isset($_GET[STARTER])) {
 
 
 /*
+    Вывод поля select в форме
+*/
+function show_select_field($name, $list, $current)
+{
+    echo '<select name="',$name,'">';
+    foreach ($list as $key => $value) {
+        echo '<option value="',$key,'"';
+        if ($current == $key) {
+            echo ' selected';
+        }
+        echo '>',$value,'</option>';
+    }
+    echo '</select>';
+}
+
+
+/*
     Вывод положительного результата поиска
 */
 function show_result($filename, $matches)
@@ -359,10 +376,7 @@ $show_only_folders = $cur_mode == 2;
 $start_time = time();
 
 // искомая строка
-$search_str = '';
-if (!empty($_POST['search_str'])) {
-    $search_str = $_POST['search_str'];
-}
+$search_str = !empty($_POST['search_str']) ? $_POST['search_str'] : '';
 
 // Выбор расширения файла
 $file_extension_id = read_post_or_default('file_extension', 0, count($file_extensions));
@@ -370,7 +384,6 @@ $file_extension = $file_extensions[$file_extension_id];
 
 // Флаг поиска во всех файлах
 $search_in_all = $file_extension_id == (count($file_extensions) - 1);
-unset($file_extension_id);
 
 // Флаг, прерван ли поиск из-за таймаута
 $interrupted = false;
@@ -394,53 +407,35 @@ ini_set('max_execution_time', '60');
 <body>
 <form method="POST">
 in 
-<select name="file_extension">
 <?php
-// Поле выбора доступных расширений файла
-foreach ($file_extensions as $key => $extension) {
-    echo '<option value="',$key,'"';
-    if ($file_extension == $extension) {
-        echo ' selected';
-    }
-    echo '>',$extension,'</option>';
-}
-unset($file_extensions);
+// Доступные расширения файла
+show_select_field('file_extension', $file_extensions, $file_extension_id);
+unset($file_extension_id);
 ?>
-</select>
 <input type="text" placeholder="text" name="search_str" value="<?=htmlentities($search_str)?>" maxlength="50">
 <button type="submit">search</button>
 <p> don't forget to <?=is_writable(__FILE__) ? '<a href="?delete">delete</a>' : 'delete' ?> this script from server</p>
 <details>
 <summary>Advanced settings</summary>
 <h5> Scan mode: 
-<select name="mode">
 <?php
-// Поле выбора режима сканирования
-foreach ($mode as $key => $name) {
-    echo '<option value="',$key,'"';
-    if ($cur_mode == $key) {
-        echo ' selected';
-    }
-    echo '>',$name,'</option>';
-}
+// Режим сканирования
+show_select_field('mode', $mode, $cur_mode);
 ?>
-</select>
 </h5>
 <h5> Max depth: 
-<select name="cur_depth">
 <?php
-// Поле выбора доступных расширений файла
+// Глубина сканирования
+$depths = array();
 for ($i = 1; $i <= $max_depth; $i++) {
-    echo '<option value="',$i,'"';
-    if ($cur_depth == $i) {
-        echo ' selected';
-    }
-    echo '>',$i,'</option>';
+    $depths[$i] = $i;
 }
 unset($i);
 unset($max_depth);
+show_select_field('cur_depth', $depths, $cur_depth);
+unset($depths);
 ?>
-</select> folders
+ folders
 </h5>
 </details>
 </form>
@@ -449,11 +444,7 @@ if ($show_only_folders) {
     echo '<section><header>Folders:</header><slot>';
     list_recursive('.');
     echo '</slot></section>';
-    if ($interrupted) {
-        echo '<output>Scan time has expired!</output>';
-    } else {
-        echo '<p>Scan completed</p>';
-    }
+    echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed</p>';
 } elseif ($search_str) {
     // Запрос должен содержать более 3 и менее 50 символов
     $search_str_len = strlen($search_str);
@@ -461,11 +452,7 @@ if ($show_only_folders) {
         if ($search_str_len < 51) {
             unset($search_str_len);
             scan_recursive('.', $search_str);
-            if ($interrupted) {
-                echo '<output>Search time has expired!</output>';
-            } else {
-                echo '<p>Search completed</p>';
-            }
+            echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed</p>';
         } else {
             echo '<output>Request is too long.<br>',$search_str_len,' > 50</output>';
         }
