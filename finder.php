@@ -4,7 +4,7 @@
     ❗Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта❗
 
 */
-define('VERSION', '1.1');
+define('VERSION', '1.2');
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 define('STARTER', 'run');
@@ -93,6 +93,9 @@ define('MODES', array(
 ));
 define('MODES_COUNT', count(MODES));
 
+// запуск таймера, чтобы скрипт не сканировал больше минуты
+define('START_TIME', time());
+
 
 /*
     Вывод поля select в форме
@@ -129,8 +132,7 @@ function show_result($filename, $matches)
 */
 function searching($content, $needle, $pos)
 {
-    global $search_func_name;
-    return call_user_func($search_func_name, $content, $needle, $pos);
+    return call_user_func(SEARCH_FUNC_NAME, $content, $needle, $pos);
 }
 
 
@@ -192,12 +194,11 @@ function list_dir($directory)
 */
 function is_correct_extension($file)
 {
-    global $file_extension, $search_in_all;
-    if ($search_in_all) {
+    if (SEARCH_IN_ALL) {
         return true;
     }
-    $extension_pos = strpos($file, $file_extension);
-    if ($extension_pos !== false && substr($file, $extension_pos) == $file_extension) {
+    $extension_pos = strpos($file, SEARCHED_FILE_EXTENSION);
+    if ($extension_pos !== false && substr($file, $extension_pos) == SEARCHED_FILE_EXTENSION) {
         return true;
     }
     return false;
@@ -249,8 +250,8 @@ function read_file($filepath)
 */
 function scan_recursive($directory, $search)
 {
-    global $start_time, $interrupted, $scan_depth, $cur_depth;
-    if ($scan_depth > $cur_depth) {
+    global $interrupted, $current_depth;
+    if ($current_depth > DEPTH_LIMIT) {
         return;
     }
     $directory = list_dir($directory);
@@ -259,9 +260,9 @@ function scan_recursive($directory, $search)
             continue;
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
-                $scan_depth++;
+                $current_depth++;
                 scan_recursive($filename, $search);
-                $scan_depth--;
+                $current_depth--;
             }
         } else {
             if (is_correct_file($filename)) {
@@ -272,7 +273,7 @@ function scan_recursive($directory, $search)
                 unset($content);
             }
         }
-        if ((time() - $start_time) > 55) {
+        if ((time() - START_TIME) > 55) {
             $interrupted = true;
             return;
         }
@@ -285,8 +286,8 @@ function scan_recursive($directory, $search)
 */
 function list_recursive($directory)
 {
-    global $start_time, $interrupted, $scan_depth, $cur_depth;
-    if ($scan_depth > $cur_depth) {
+    global $interrupted, $current_depth;
+    if ($current_depth > DEPTH_LIMIT) {
         return;
     }
     $directory = list_dir($directory);
@@ -296,13 +297,13 @@ function list_recursive($directory)
             continue;
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
-                $scan_depth++;
+                $current_depth++;
                 echo '<li>',$filename,'</li>';
                 list_recursive($filename);
-                $scan_depth--;
+                $current_depth--;
             }
         }
-        if ((time() - $start_time) > 55) {
+        if ((time() - START_TIME) > 55) {
             $interrupted = true;
             return;
         }
@@ -364,32 +365,30 @@ $cur_mode = read_post_or_default('mode', 0, MODES_COUNT);
 $max_depth = 12;
 
 // Выбранная глубина вложенности
-$cur_depth = read_post_or_default('cur_depth', $max_depth, $max_depth);
-
-// Текущая сканиуемая глубина
-$scan_depth = 1;
+define('DEPTH_LIMIT', read_post_or_default('cur_depth', $max_depth, $max_depth));
 
 // Чувствительность к регистру
-$search_func_name = $cur_mode == 1 ? 'strpos' : 'stripos';
+define('SEARCH_FUNC_NAME', $cur_mode == 1 ? 'strpos' : 'stripos');
+
+// искомая строка
+define('SEARCH_STR', !empty($_POST['search_str']) ? $_POST['search_str'] : '');
+define('SEARCH_STR_LEN', strlen(SEARCH_STR));
+
+// Выбор расширения файла
+$file_extension_id = read_post_or_default('file_extension', 0, FILE_EXTENSIONS_COUNT);
+define('SEARCHED_FILE_EXTENSION', FILE_EXTENSIONS[$file_extension_id]);
+
+// Запуск поиска во всех файлах
+define('SEARCH_IN_ALL', $file_extension_id == (FILE_EXTENSIONS_COUNT - 1));
 
 // Отобразить отсканированные директории без чтения файлов
 $show_only_folders = $cur_mode == 2;
 
-// запуск таймера, чтобы скрипт не сканировал больше минуты
-$start_time = time();
-
-// искомая строка
-$search_str = !empty($_POST['search_str']) ? $_POST['search_str'] : '';
-
-// Выбор расширения файла
-$file_extension_id = read_post_or_default('file_extension', 0, FILE_EXTENSIONS_COUNT);
-$file_extension = FILE_EXTENSIONS[$file_extension_id];
-
-// Флаг поиска во всех файлах
-$search_in_all = $file_extension_id == (FILE_EXTENSIONS_COUNT - 1);
-
 // Флаг, прерван ли поиск из-за таймаута
 $interrupted = false;
+
+// Текущая сканиуемая глубина
+$current_depth = 1;
 
 // Защита от межсайтового скриптинга
 header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
@@ -414,7 +413,7 @@ in
 show_select_field('file_extension', FILE_EXTENSIONS, $file_extension_id);
 unset($file_extension_id);
 ?>
-<input type="text" placeholder="text" name="search_str" value="<?=htmlentities($search_str)?>" maxlength="50">
+<input type="text" placeholder="text" name="search_str" value="<?=htmlentities(SEARCH_STR)?>" maxlength="50">
 <button type="submit">search</button>
 <p> don't forget to <?=is_writable(__FILE__) ? '<a href="?delete">delete</a>' : 'delete' ?> this script from server</p>
 <details>
@@ -423,6 +422,7 @@ unset($file_extension_id);
 <?php
 // Режим сканирования
 show_select_field('mode', MODES, $cur_mode);
+unset($cur_mode);
 ?>
 </h5>
 <h5> Max depth: 
@@ -434,7 +434,7 @@ for ($i = 1; $i <= $max_depth; $i++) {
 }
 unset($i);
 unset($max_depth);
-show_select_field('cur_depth', $depths, $cur_depth);
+show_select_field('cur_depth', $depths, DEPTH_LIMIT);
 unset($depths);
 ?>
  folders
@@ -447,19 +447,17 @@ if ($show_only_folders) {
     list_recursive('.');
     echo '</slot></section>';
     echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed</p>';
-} elseif ($search_str) {
+} elseif (SEARCH_STR) {
     // Запрос должен содержать более 3 и менее 50 символов
-    $search_str_len = strlen($search_str);
-    if ($search_str_len > 3) {
-        if ($search_str_len < 51) {
-            unset($search_str_len);
-            scan_recursive('.', $search_str);
+    if (SEARCH_STR_LEN > 3) {
+        if (SEARCH_STR_LEN < 51) {
+            scan_recursive('.', SEARCH_STR);
             echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed</p>';
         } else {
-            echo '<output>Request is too long.<br>',$search_str_len,' > 50</output>';
+            echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > 50</output>';
         }
     } else {
-        echo '<output>Request is too short.<br>',$search_str_len,' < 4</output>';
+        echo '<output>Request is too short.<br>',SEARCH_STR_LEN,' < 4</output>';
     }
 }
 ?>
