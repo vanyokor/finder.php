@@ -9,25 +9,89 @@ define('VERSION', '1.1');
 // GET параметр, который необходимо передать в скрипт, для его запуска
 define('STARTER', 'run');
 
-// Самоудаление скрипта, при попытке запуска, через сутки
-if (time() > (filectime(__FILE__) + 86400)) {
-    @unlink(__FILE__);
-    exit('file timeout');
-}
-// Самоудаление скрипта по get запросу
-if (isset($_GET['delete'])) {
-    if (is_writable(__FILE__)) {
-        unlink(__FILE__);
-        exit('deleted');
-    } else {
-        exit('Error! no permission to delete');
-    }
-}
+// TODO: Попробовать вернуть полные пути
 
-// Для запуска, не забудь добавить GET параметр в адресную строку
-if (!isset($_GET[STARTER])) {
-    die();
-}
+// исключить из поиска директории
+define('IGNORE_DIR', array(
+    "./.git",
+    "./cgi-bin",
+    "./stats",
+    "./bitrix/sounds",
+    "./bitrix/services",
+    "./bitrix/panel",
+    "./bitrix/otp",
+    "./bitrix/legal",
+    "./bitrix/blocks",
+    "./bitrix/fonts",
+    "./bitrix/themes",
+    "./bitrix/gadgets",
+    "./bitrix/tmp",
+    "./bitrix/backup",
+    "./bitrix/images",
+    "./bitrix/cache",
+    "./bitrix/managed_cache",
+    "./bitrix/html_pages",
+    "./bitrix/stack_cache",
+    "./bitrix/updates",
+    "./bitrix/modules",
+    "./bitrix/wizards",
+    "./upload/resize_cache",
+    "./upload/medialibrary",
+    "./upload/iblock",
+    "./upload/tmp",
+    "./upload/uf",
+    "./system/storage",
+    "./image/cache",
+    "./wp-content/cache",
+    "./core/cache",
+    "./assets/cache",
+    "./logs",
+    "./cache",
+    "./administrator/cache",
+    "./wa-cache",
+    "./var/cache",
+    "./wp-content/plugins/akeebabackupwp/app/tmp",
+));
+
+// исключить из поиска файлы
+define('IGNORE_FILE', array(
+    "./finder.php",
+));
+
+// Скрывать содержимое файла
+define('SENSITIVE_DATA_FILES', array(
+    "./bitrix/.settings.php",
+    "./bitrix/php_interface/dbconn.php",
+    "./config.php",
+    "./admin/config.php",
+    "./wp-config.php",
+    "./manager/includes/config.inc.php",
+    "./core/config/config.inc.php",
+    "./configuration.php",
+    "./sites/default/settings.php",
+    "./wa-config/db.php",
+    "./wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php",
+));
+
+// Доступные для выбора расширения файлов
+define('FILE_EXTENSIONS', array(
+    '.php',
+    '.js',
+    '.css',
+    '.html',
+    '.tpl',
+    '.twig',
+    'all', // не удалять, запускает поиск по всем файлам
+));
+define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
+
+// Режимы сканирования
+define('MODES', array(
+    'default',
+    'case sensitive',
+    'show only folder names',
+));
+define('MODES_COUNT', count(MODES));
 
 
 /*
@@ -75,7 +139,6 @@ function searching($content, $needle, $pos)
 */
 function find_substr($content, $filename, $needle)
 {
-    global $sensitive_data_files;
     $startpos = 46;
     $endpos = 126;
     $pos = 0;
@@ -86,7 +149,7 @@ function find_substr($content, $filename, $needle)
             $startpos = $pos;
         }
         $newpos = $pos + $len;
-        if (in_array($filename, $sensitive_data_files)) {
+        if (in_array($filename, SENSITIVE_DATA_FILES)) {
             $matches[] = array('content contains &quot;', escape_str($needle), '&quot;');
         } else {
             $matches[] = array(
@@ -146,10 +209,8 @@ function is_correct_extension($file)
 */
 function is_correct_file($file)
 {
-    global $ignore_file;
-
     if (is_correct_extension($file)) {
-        if (!in_array($file, $ignore_file)) {
+        if (!in_array($file, IGNORE_FILE)) {
             if (is_readable($file)) {
                 $filesize = filesize($file);
                 if ($filesize) {
@@ -188,7 +249,7 @@ function read_file($filepath)
 */
 function scan_recursive($directory, $search)
 {
-    global $ignore_dir, $start_time, $interrupted, $scan_depth, $cur_depth;
+    global $start_time, $interrupted, $scan_depth, $cur_depth;
     if ($scan_depth > $cur_depth) {
         return;
     }
@@ -197,7 +258,7 @@ function scan_recursive($directory, $search)
         if (is_link($filename)) {
             continue;
         } elseif (is_dir($filename)) {
-            if (!in_array($filename, $ignore_dir)) {
+            if (!in_array($filename, IGNORE_DIR)) {
                 $scan_depth++;
                 scan_recursive($filename, $search);
                 $scan_depth--;
@@ -224,7 +285,7 @@ function scan_recursive($directory, $search)
 */
 function list_recursive($directory)
 {
-    global $ignore_dir, $start_time, $interrupted, $scan_depth, $cur_depth;
+    global $start_time, $interrupted, $scan_depth, $cur_depth;
     if ($scan_depth > $cur_depth) {
         return;
     }
@@ -234,7 +295,7 @@ function list_recursive($directory)
         if (is_link($filename)) {
             continue;
         } elseif (is_dir($filename)) {
-            if (!in_array($filename, $ignore_dir)) {
+            if (!in_array($filename, IGNORE_DIR)) {
                 $scan_depth++;
                 echo '<li>',$filename,'</li>';
                 list_recursive($filename);
@@ -276,88 +337,28 @@ function read_post_or_default($name, $default = 0, $max_value = 1)
 }
 
 
-// исключить из поиска директории
-$ignore_dir = array(
-    "./.git",
-    "./cgi-bin",
-    "./stats",
-    "./bitrix/sounds",
-    "./bitrix/services",
-    "./bitrix/panel",
-    "./bitrix/otp",
-    "./bitrix/legal",
-    "./bitrix/blocks",
-    "./bitrix/fonts",
-    "./bitrix/themes",
-    "./bitrix/gadgets",
-    "./bitrix/tmp",
-    "./bitrix/backup",
-    "./bitrix/images",
-    "./bitrix/cache",
-    "./bitrix/managed_cache",
-    "./bitrix/html_pages",
-    "./bitrix/stack_cache",
-    "./bitrix/updates",
-    "./bitrix/modules",
-    "./bitrix/wizards",
-    "./upload/resize_cache",
-    "./upload/medialibrary",
-    "./upload/iblock",
-    "./upload/tmp",
-    "./upload/uf",
-    "./system/storage",
-    "./image/cache",
-    "./wp-content/cache",
-    "./core/cache",
-    "./assets/cache",
-    "./logs",
-    "./cache",
-    "./administrator/cache",
-    "./wa-cache",
-    "./var/cache",
-    "./wp-content/plugins/akeebabackupwp/app/tmp",
-);
+// Самоудаление скрипта, при попытке запуска, через сутки
+if (time() > (filectime(__FILE__) + 86400)) {
+    @unlink(__FILE__);
+    exit('file timeout');
+}
+// Самоудаление скрипта по get запросу
+if (isset($_GET['delete'])) {
+    if (is_writable(__FILE__)) {
+        unlink(__FILE__);
+        exit('deleted');
+    } else {
+        exit('Error! no permission to delete');
+    }
+}
 
-// исключить из поиска файлы
-$ignore_file = array(
-    "./finder.php",
-);
-
-// Скрывать содержимое файла
-$sensitive_data_files = array(
-    "./bitrix/.settings.php",
-    "./bitrix/php_interface/dbconn.php",
-    "./config.php",
-    "./admin/config.php",
-    "./wp-config.php",
-    "./manager/includes/config.inc.php",
-    "./core/config/config.inc.php",
-    "./configuration.php",
-    "./sites/default/settings.php",
-    "./wa-config/db.php",
-    "./wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php",
-);
-
-// Доступные для выбора расширения файлов
-$file_extensions = array(
-    '.php',
-    '.js',
-    '.css',
-    '.html',
-    '.tpl',
-    '.twig',
-    'all', // не удалять, запускает поиск по всем файлам
-);
-
-// Режимы сканирования
-$mode = array(
-    'default',
-    'case sensitive',
-    'show only folder names',
-);
+// Для запуска, не забудь добавить GET параметр в адресную строку
+if (!isset($_GET[STARTER])) {
+    die();
+}
 
 // Выбранный режим сканирования
-$cur_mode = read_post_or_default('mode', 0, count($mode));
+$cur_mode = read_post_or_default('mode', 0, MODES_COUNT);
 
 // Максимальная глубина вложенности
 $max_depth = 12;
@@ -381,11 +382,11 @@ $start_time = time();
 $search_str = !empty($_POST['search_str']) ? $_POST['search_str'] : '';
 
 // Выбор расширения файла
-$file_extension_id = read_post_or_default('file_extension', 0, count($file_extensions));
-$file_extension = $file_extensions[$file_extension_id];
+$file_extension_id = read_post_or_default('file_extension', 0, FILE_EXTENSIONS_COUNT);
+$file_extension = FILE_EXTENSIONS[$file_extension_id];
 
 // Флаг поиска во всех файлах
-$search_in_all = $file_extension_id == (count($file_extensions) - 1);
+$search_in_all = $file_extension_id == (FILE_EXTENSIONS_COUNT - 1);
 
 // Флаг, прерван ли поиск из-за таймаута
 $interrupted = false;
@@ -410,7 +411,7 @@ ini_set('max_execution_time', '60');
 in 
 <?php
 // Доступные расширения файла
-show_select_field('file_extension', $file_extensions, $file_extension_id);
+show_select_field('file_extension', FILE_EXTENSIONS, $file_extension_id);
 unset($file_extension_id);
 ?>
 <input type="text" placeholder="text" name="search_str" value="<?=htmlentities($search_str)?>" maxlength="50">
@@ -421,7 +422,7 @@ unset($file_extension_id);
 <h5> Scan mode: 
 <?php
 // Режим сканирования
-show_select_field('mode', $mode, $cur_mode);
+show_select_field('mode', MODES, $cur_mode);
 ?>
 </h5>
 <h5> Max depth: 
