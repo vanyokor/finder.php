@@ -9,68 +9,66 @@ define('VERSION', '1.2');
 // GET параметр, который необходимо передать в скрипт, для его запуска
 define('STARTER', 'run');
 
-// TODO: Попробовать вернуть полные пути
-
 // исключить из поиска директории
 define('IGNORE_DIR', array(
-    "./.git",
-    "./cgi-bin",
-    "./stats",
-    "./bitrix/sounds",
-    "./bitrix/services",
-    "./bitrix/panel",
-    "./bitrix/otp",
-    "./bitrix/legal",
-    "./bitrix/blocks",
-    "./bitrix/fonts",
-    "./bitrix/themes",
-    "./bitrix/gadgets",
-    "./bitrix/tmp",
-    "./bitrix/backup",
-    "./bitrix/images",
-    "./bitrix/cache",
-    "./bitrix/managed_cache",
-    "./bitrix/html_pages",
-    "./bitrix/stack_cache",
-    "./bitrix/updates",
-    "./bitrix/modules",
-    "./bitrix/wizards",
-    "./upload/resize_cache",
-    "./upload/medialibrary",
-    "./upload/iblock",
-    "./upload/tmp",
-    "./upload/uf",
-    "./system/storage",
-    "./image/cache",
-    "./wp-content/cache",
-    "./core/cache",
-    "./assets/cache",
-    "./logs",
-    "./cache",
-    "./administrator/cache",
-    "./wa-cache",
-    "./var/cache",
-    "./wp-content/plugins/akeebabackupwp/app/tmp",
+    './.git',
+    './cgi-bin',
+    './stats',
+    './bitrix/sounds',
+    './bitrix/services',
+    './bitrix/panel',
+    './bitrix/otp',
+    './bitrix/legal',
+    './bitrix/blocks',
+    './bitrix/fonts',
+    './bitrix/themes',
+    './bitrix/gadgets',
+    './bitrix/tmp',
+    './bitrix/backup',
+    './bitrix/images',
+    './bitrix/cache',
+    './bitrix/managed_cache',
+    './bitrix/html_pages',
+    './bitrix/stack_cache',
+    './bitrix/updates',
+    './bitrix/modules',
+    './bitrix/wizards',
+    './upload/resize_cache',
+    './upload/medialibrary',
+    './upload/iblock',
+    './upload/tmp',
+    './upload/uf',
+    './system/storage',
+    './image/cache',
+    './wp-content/cache',
+    './core/cache',
+    './assets/cache',
+    './logs',
+    './cache',
+    './administrator/cache',
+    './wa-cache',
+    './var/cache',
+    './wp-content/plugins/akeebabackupwp/app/tmp',
 ));
 
 // исключить из поиска файлы
 define('IGNORE_FILE', array(
-    "./finder.php",
+    './finder.php',
 ));
 
 // Скрывать содержимое файла
 define('SENSITIVE_DATA_FILES', array(
-    "./bitrix/.settings.php",
-    "./bitrix/php_interface/dbconn.php",
-    "./config.php",
-    "./admin/config.php",
-    "./wp-config.php",
-    "./manager/includes/config.inc.php",
-    "./core/config/config.inc.php",
-    "./configuration.php",
-    "./sites/default/settings.php",
-    "./wa-config/db.php",
-    "./wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php",
+    './bitrix/.settings.php',
+    './bitrix/php_interface/dbconn.php',
+    './config.php',
+    './admin/config.php',
+    './wp-config.php',
+    './manager/includes/config.inc.php',
+    './core/config/config.inc.php',
+    './configuration.php',
+    './sites/default/settings.php',
+    './wa-config/db.php',
+    './wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php',
 ));
 
 // Доступные для выбора расширения файлов
@@ -248,9 +246,8 @@ function read_file($filepath)
 /*
     Рекурсивный поиск файлов, содержащих искомую строку
 */
-function scan_recursive($directory, $search)
+function scan_recursive($directory, $search, &$interrupted, &$current_depth)
 {
-    global $interrupted, $current_depth;
     if ($current_depth > DEPTH_LIMIT) {
         return;
     }
@@ -260,9 +257,9 @@ function scan_recursive($directory, $search)
             continue;
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
-                $current_depth++;
-                scan_recursive($filename, $search);
-                $current_depth--;
+                ++$current_depth;
+                scan_recursive($filename, $search, $interrupted, $current_depth);
+                --$current_depth;
             }
         } else {
             if (is_correct_file($filename)) {
@@ -284,9 +281,8 @@ function scan_recursive($directory, $search)
 /*
     Отображение сканируемых директорий
 */
-function list_recursive($directory)
+function list_recursive($directory, &$interrupted, &$current_depth)
 {
-    global $interrupted, $current_depth;
     if ($current_depth > DEPTH_LIMIT) {
         return;
     }
@@ -299,7 +295,7 @@ function list_recursive($directory)
             if (!in_array($filename, IGNORE_DIR)) {
                 $current_depth++;
                 echo '<li>',$filename,'</li>';
-                list_recursive($filename);
+                list_recursive($filename, $interrupted, $current_depth);
                 $current_depth--;
             }
         }
@@ -444,14 +440,14 @@ unset($depths);
 <?php
 if ($show_only_folders) {
     echo '<section><header>Folders:</header><slot>';
-    list_recursive('.');
+    list_recursive('.', $interrupted, $current_depth);
     echo '</slot></section>';
     echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed</p>';
 } elseif (SEARCH_STR) {
     // Запрос должен содержать более 3 и менее 50 символов
     if (SEARCH_STR_LEN > 3) {
         if (SEARCH_STR_LEN < 51) {
-            scan_recursive('.', SEARCH_STR);
+            scan_recursive('.', SEARCH_STR, $interrupted, $current_depth);
             echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > 50</output>';
