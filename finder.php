@@ -2,6 +2,7 @@
 /*
 
     ❗Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта❗
+      Инструкция: https://github.com/vanyokor/finder.php/blob/main/README.md
 
 */
 define('VERSION', '1.2');
@@ -399,7 +400,7 @@ ini_set('max_execution_time', '60');
 <html>
 <head>
 <meta charset="UTF-8"><title>finder v<?=VERSION?></title><meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}</style>
+<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}</style>
 </head>
 <body>
 <form method="POST">
@@ -408,20 +409,20 @@ in
 // Доступные расширения файла
 show_select_field('file_extension', FILE_EXTENSIONS, $file_extension_id);
 unset($file_extension_id);
-?>
+?> 
 <input type="text" placeholder="text" name="search_str" value="<?=htmlentities(SEARCH_STR)?>" maxlength="50">
 <button type="submit">search</button>
 <p> don't forget to <?=is_writable(__FILE__) ? '<a href="?delete">delete</a>' : 'delete' ?> this script from server</p>
 <details>
 <summary>Advanced settings</summary>
-<h5> Scan mode: 
+<label> Scan mode: 
 <?php
 // Режим сканирования
 show_select_field('mode', MODES, $cur_mode);
 unset($cur_mode);
 ?>
-</h5>
-<h5> Max depth: 
+</label>
+<label> Max depth: 
 <?php
 // Глубина сканирования
 $depths = array();
@@ -434,7 +435,7 @@ show_select_field('cur_depth', $depths, DEPTH_LIMIT);
 unset($depths);
 ?>
  folders
-</h5>
+</label>
 </details>
 </form>
 <?php
@@ -442,13 +443,13 @@ if ($show_only_folders) {
     echo '<section><header>Folders:</header><slot>';
     list_recursive('.', $interrupted, $current_depth);
     echo '</slot></section>';
-    echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed</p>';
+    echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>';
 } elseif (SEARCH_STR) {
     // Запрос должен содержать более 3 и менее 50 символов
     if (SEARCH_STR_LEN > 3) {
         if (SEARCH_STR_LEN < 51) {
             scan_recursive('.', SEARCH_STR, $interrupted, $current_depth);
-            echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed</p>';
+            echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed!</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > 50</output>';
         }
