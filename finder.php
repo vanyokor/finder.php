@@ -146,9 +146,9 @@ function show_result($filename, $matches)
 /*
     Поиск подстроки в тексте
 */
-function searching($content, $needle, $pos)
+function searching($content, $pos)
 {
-    return call_user_func(SEARCH_FUNC_NAME, $content, $needle, $pos);
+    return call_user_func(SEARCH_FUNC_NAME, $content, SEARCH_STR, $pos);
 }
 
 
@@ -160,7 +160,7 @@ function find_substr($content, $filename)
     $startpos = RESULTS_START_POS;
     $pos = 0;
     $matches = array();
-    while (($pos = searching($content, SEARCH_STR, $pos)) !== false) {
+    while (($pos = searching($content, $pos)) !== false) {
         if ($pos < $startpos) {
             $startpos = $pos;
         }
