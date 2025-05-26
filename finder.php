@@ -185,18 +185,19 @@ function find_substr($content, $filename)
 /*
     Сканирование директории
 */
-function list_dir($directory)
+function list_dir($directoryName)
 {
     $result = array();
-    if (is_readable($directory)) {
-        if ($d = opendir($directory)) {
-            while ($fname = readdir($d)) {
+    if (is_readable($directoryName)) {
+        $dir = opendir($directoryName);
+        if ($dir) {
+            while ($fname = readdir($dir)) {
                 if ($fname == '.' || $fname == '..') {
                     continue;
                 }
-                $result[] = $directory.DIRECTORY_SEPARATOR.$fname;
+                $result[] = $directoryName.DIRECTORY_SEPARATOR.$fname;
             }
-            closedir($d);
+            closedir($dir);
         }
     }
     return $result;
@@ -211,8 +212,8 @@ function is_correct_extension($file)
     if (SEARCH_IN_ALL) {
         return true;
     }
-    $extension_pos = strpos($file, SEARCHED_FILE_EXTENSION);
-    if ($extension_pos !== false && substr($file, $extension_pos) == SEARCHED_FILE_EXTENSION) {
+    $extensionPos = strpos($file, SEARCHED_FILE_EXTENSION);
+    if ($extensionPos !== false && substr($file, $extensionPos) == SEARCHED_FILE_EXTENSION) {
         return true;
     }
     return false;
@@ -262,9 +263,9 @@ function read_file($filepath)
 /*
     Рекурсивный поиск файлов, содержащих искомую строку
 */
-function scan_recursive($directory, &$interrupted, &$current_depth)
+function scan_recursive($directory, &$interrupted, &$currentDepth)
 {
-    if ($current_depth > DEPTH_LIMIT) {
+    if ($currentDepth > DEPTH_LIMIT) {
         return;
     }
     $directory = list_dir($directory);
@@ -273,9 +274,9 @@ function scan_recursive($directory, &$interrupted, &$current_depth)
             continue;
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
-                ++$current_depth;
-                scan_recursive($filename, $interrupted, $current_depth);
-                --$current_depth;
+                ++$currentDepth;
+                scan_recursive($filename, $interrupted, $currentDepth);
+                --$currentDepth;
             }
         } else {
             if (is_correct_file($filename)) {
@@ -297,9 +298,9 @@ function scan_recursive($directory, &$interrupted, &$current_depth)
 /*
     Отображение сканируемых директорий
 */
-function list_recursive($directory, &$interrupted, &$current_depth)
+function list_recursive($directory, &$interrupted, &$currentDepth)
 {
-    if ($current_depth > DEPTH_LIMIT) {
+    if ($currentDepth > DEPTH_LIMIT) {
         return;
     }
     $directory = list_dir($directory);
@@ -309,10 +310,10 @@ function list_recursive($directory, &$interrupted, &$current_depth)
             continue;
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
-                ++$current_depth;
+                ++$currentDepth;
                 echo '<li>',$filename,'</li>';
-                list_recursive($filename, $interrupted, $current_depth);
-                --$current_depth;
+                list_recursive($filename, $interrupted, $currentDepth);
+                --$currentDepth;
             }
         }
         if ((time() - START_TIME) > TIME_LIMIT) {
@@ -338,11 +339,11 @@ function escape_str($text)
 /*
     Получение настройки с POST запроса или возврат значения по умолчанию
 */
-function read_post_or_default($name, $default = 0, $max_value = 1)
+function read_post_or_default($name, $default = 0, $maxValue = 1)
 {
     if (isset($_POST[$name])) {
         $selected = (int) $_POST[$name];
-        if (($selected > 0) && ($selected < $max_value)) {
+        if (($selected > 0) && ($selected < $maxValue)) {
             return $selected;
         }
     }
@@ -397,7 +398,7 @@ $show_only_folders = $cur_mode == MODE_SHOW_FOLDER_NAMES;
 $interrupted = false;
 
 // Текущая сканиуемая глубина
-$current_depth = 1;
+$currentDepth = 1;
 
 // Защита от межсайтового скриптинга
 header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
@@ -454,13 +455,13 @@ unset($depths);
 <?php
 if ($show_only_folders) {
     echo '<section><header>Folders:</header><slot>';
-    list_recursive('.', $interrupted, $current_depth);
+    list_recursive('.', $interrupted, $currentDepth);
     echo '</slot></section>';
     echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>';
 } elseif (SEARCH_STR) {
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
-            scan_recursive('.', $interrupted, $current_depth);
+            scan_recursive('.', $interrupted, $currentDepth);
             echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed!</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > ', MAX_SEARCH_LEN - 1, '</output>';
