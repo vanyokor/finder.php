@@ -341,11 +341,9 @@ function escape_str($text)
 */
 function read_post_or_default($name, $default = 0, $maxValue = 1)
 {
-    if (isset($_POST[$name])) {
-        $selected = (int) $_POST[$name];
-        if (($selected > 0) && ($selected < $maxValue)) {
-            return $selected;
-        }
+    $selected = (int)filter_input(INPUT_POST, $name, FILTER_SANITIZE_NUMBER_INT);
+    if (($selected > 0) && ($selected < $maxValue)) {
+        return $selected;
     }
     return $default;
 }
@@ -381,7 +379,7 @@ define('DEPTH_LIMIT', read_post_or_default('cur_depth', MAX_DEPTH, MAX_DEPTH));
 define('SEARCH_FUNC_NAME', $cur_mode == MODE_SENSITIVE ? 'strpos' : 'stripos');
 
 // искомая строка
-define('SEARCH_STR', !empty($_POST['search_str']) ? $_POST['search_str'] : '');
+define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
 define('SEARCH_STR_LEN', strlen(SEARCH_STR));
 
 // Выбор расширения файла
