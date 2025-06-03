@@ -112,6 +112,10 @@ define('FILE_SIZE_LIMIT', 512000);
 define('ORIGINAL_SYMBOLS', array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '));
 define('REPLACED_SYMBOLS', array(' ', ' ', ' ', '', '', '', ''));
 
+define('FIELD_WIDESCREEN', 'widescreen');
+define('FIELD_CUR_DEPTH', 'cur_depth');
+define('FIELD_MODE', 'mode');
+
 
 /*
     Вывод поля select в форме
@@ -339,7 +343,7 @@ function escape_str($text)
 /*
     Получение настройки с POST запроса или возврат значения по умолчанию
 */
-function read_post_or_default($name, $default = 0, $maxValue = 1)
+function read_post_or_default($name, $default = 0, $maxValue = 2)
 {
     $selected = (int)filter_input(INPUT_POST, $name, FILTER_SANITIZE_NUMBER_INT);
     if (($selected > 0) && ($selected < $maxValue)) {
@@ -370,13 +374,16 @@ if (!isset($_GET[STARTER])) {
 }
 
 // Выбранный режим сканирования
-$cur_mode = read_post_or_default('mode', 0, MODES_COUNT);
+$cur_mode = read_post_or_default(FIELD_MODE, 0, MODES_COUNT);
 
 // Выбранная глубина вложенности
-define('DEPTH_LIMIT', read_post_or_default('cur_depth', MAX_DEPTH, MAX_DEPTH));
+define('DEPTH_LIMIT', read_post_or_default(FIELD_CUR_DEPTH, MAX_DEPTH, MAX_DEPTH));
 
 // Чувствительность к регистру
 define('SEARCH_FUNC_NAME', $cur_mode == MODE_SENSITIVE ? 'strpos' : 'stripos');
+
+// Полноэкранный режим
+define('IS_WIDESCREEN', (bool) read_post_or_default(FIELD_WIDESCREEN, 0));
 
 // искомая строка
 define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
@@ -413,7 +420,7 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}</style>
+<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}</style>
 </head>
 <body>
 <form method="POST">
@@ -431,7 +438,7 @@ unset($file_extension_id);
 <label> Scan mode: 
 <?php
 // Режим сканирования
-show_select_field('mode', MODES, $cur_mode);
+show_select_field(FIELD_MODE, MODES, $cur_mode);
 unset($cur_mode);
 ?>
 </label>
@@ -443,10 +450,16 @@ for ($i = 1; $i <= MAX_DEPTH; $i++) {
     $depths[$i] = $i;
 }
 unset($i);
-show_select_field('cur_depth', $depths, DEPTH_LIMIT);
+show_select_field(FIELD_CUR_DEPTH, $depths, DEPTH_LIMIT);
 unset($depths);
 ?>
  folders
+</label>
+<label> Widescreen: 
+<?php
+// Широкоэкранный режим
+show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN);
+?>
 </label>
 </details>
 </form>
