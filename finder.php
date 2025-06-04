@@ -88,7 +88,7 @@ define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
 define('MODES', array(
     'default',
     'case sensitive',
-    'show only folder names',
+    'just show all folder names',
 ));
 define('MODES_COUNT', count(MODES));
 define('MODE_SENSITIVE', 1);
