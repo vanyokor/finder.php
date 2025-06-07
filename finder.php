@@ -80,7 +80,7 @@ define('FILE_EXTENSIONS', array(
     '.html',
     '.tpl',
     '.twig',
-    'all', // не удалять, запускает поиск по всем файлам
+    'all',
 ));
 define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
 
@@ -112,6 +112,7 @@ define('FILE_SIZE_LIMIT', 512000);
 define('ORIGINAL_SYMBOLS', array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '));
 define('REPLACED_SYMBOLS', array(' ', ' ', ' ', '', '', '', ''));
 
+define('FIELD_FILE_EXTENSION', 'file_extension');
 define('FIELD_WIDESCREEN', 'widescreen');
 define('FIELD_CUR_DEPTH', 'cur_depth');
 define('FIELD_MODE', 'mode');
@@ -390,7 +391,7 @@ define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
 define('SEARCH_STR_LEN', strlen(SEARCH_STR));
 
 // Выбор расширения файла
-$file_extension_id = read_post_or_default('file_extension', 0, FILE_EXTENSIONS_COUNT);
+$file_extension_id = read_post_or_default(FIELD_FILE_EXTENSION, 0, FILE_EXTENSIONS_COUNT);
 define('SEARCHED_FILE_EXTENSION', FILE_EXTENSIONS[$file_extension_id]);
 
 // Запуск поиска во всех файлах
@@ -427,7 +428,7 @@ ini_set('max_execution_time', '60');
 in 
 <?php
 // Доступные расширения файла
-show_select_field('file_extension', FILE_EXTENSIONS, $file_extension_id);
+show_select_field(FIELD_FILE_EXTENSION, FILE_EXTENSIONS, $file_extension_id);
 unset($file_extension_id);
 ?> 
 <input type="text" placeholder="text" name="search_str" value="<?=htmlentities(SEARCH_STR)?>" maxlength="<?=MAX_SEARCH_LEN - 1?>">
@@ -435,14 +436,16 @@ unset($file_extension_id);
 <p> don't forget to <?=is_writable(__FILE__) ? '<a href="?delete">delete</a>' : 'delete' ?> this script from server</p>
 <details>
 <summary>Advanced settings</summary>
-<label> Scan mode: 
+<label>
+Scan mode: 
 <?php
 // Режим сканирования
 show_select_field(FIELD_MODE, MODES, $cur_mode);
 unset($cur_mode);
 ?>
 </label>
-<label> Max depth: 
+<label>
+Max depth: 
 <?php
 // Глубина сканирования
 $depths = array();
@@ -455,7 +458,8 @@ unset($depths);
 ?>
  folders
 </label>
-<label> Widescreen: 
+<label>
+Widescreen: 
 <?php
 // Широкоэкранный режим
 show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN);
@@ -463,13 +467,15 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
 </label>
 </details>
 </form>
-<?php
-if ($show_only_folders) {
-    echo '<section><header>Folders:</header><slot>';
-    list_recursive('.', $interrupted, $currentDepth);
-    echo '</slot></section>';
-    echo $interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>';
-} elseif (SEARCH_STR) {
+<?php if ($show_only_folders) { ?>
+<section>
+<header>Folders:</header>
+<slot>
+<?php list_recursive('.', $interrupted, $currentDepth); ?>
+</slot>
+</section>
+<?=$interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>'; ?>
+<?php } elseif (SEARCH_STR) {
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
             scan_recursive('.', $interrupted, $currentDepth);
