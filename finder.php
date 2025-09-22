@@ -5,13 +5,13 @@
     ❗Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта❗
 
 */
-define('VERSION', '1.3');
+const VERSION = '1.3.1';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
-define('STARTER', 'run');
+const STARTER = 'run';
 
 // исключить из поиска директории
-define('IGNORE_DIR', array(
+const IGNORE_DIR = array(
     './.git',
     './cgi-bin',
     './stats',
@@ -50,15 +50,15 @@ define('IGNORE_DIR', array(
     './wa-cache',
     './var/cache',
     './wp-content/plugins/akeebabackupwp/app/tmp',
-));
+);
 
 // исключить из поиска файлы
-define('IGNORE_FILE', array(
+const IGNORE_FILE = array(
     './finder.php',
-));
+);
 
 // Скрывать содержимое файла
-define('SENSITIVE_DATA_FILES', array(
+const SENSITIVE_DATA_FILES = array(
     './bitrix/.settings.php',
     './bitrix/php_interface/dbconn.php',
     './config.php',
@@ -70,10 +70,10 @@ define('SENSITIVE_DATA_FILES', array(
     './sites/default/settings.php',
     './wa-config/db.php',
     './wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php',
-));
+);
 
 // Доступные для выбора расширения файлов
-define('FILE_EXTENSIONS', array(
+const FILE_EXTENSIONS = array(
     '.php',
     '.js',
     '.css',
@@ -81,15 +81,15 @@ define('FILE_EXTENSIONS', array(
     '.tpl',
     '.twig',
     'all',
-));
+);
 define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
 
 // Режимы сканирования
-define('MODES', array(
+const MODES = array(
     'default',
     'case sensitive',
     'just show all folder names',
-));
+);
 define('MODES_COUNT', count(MODES));
 define('MODE_SENSITIVE', 1);
 define('MODE_SHOW_FOLDER_NAMES', 2);
@@ -109,8 +109,8 @@ define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
 define('SECONDS_PER_DAY', 86400);
 define('FILE_SIZE_LIMIT', 512000);
-define('ORIGINAL_SYMBOLS', array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '));
-define('REPLACED_SYMBOLS', array(' ', ' ', ' ', '', '', '', ''));
+const ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
+const REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
 
 define('FIELD_FILE_EXTENSION', 'file_extension');
 define('FIELD_WIDESCREEN', 'widescreen');
