@@ -10,46 +10,49 @@ const VERSION = '1.3.1';
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
 
+// корневая папка для сканирования ('.' - текущая)
+const FOLDER = '.';
+
 // исключить из поиска директории
 const IGNORE_DIR = array(
-    './.git',
-    './cgi-bin',
-    './stats',
-    './bitrix/sounds',
-    './bitrix/services',
-    './bitrix/panel',
-    './bitrix/otp',
-    './bitrix/legal',
-    './bitrix/blocks',
-    './bitrix/fonts',
-    './bitrix/themes',
-    './bitrix/gadgets',
-    './bitrix/tmp',
-    './bitrix/backup',
-    './bitrix/images',
-    './bitrix/cache',
-    './bitrix/managed_cache',
-    './bitrix/html_pages',
-    './bitrix/stack_cache',
-    './bitrix/updates',
-    './bitrix/modules',
-    './bitrix/wizards',
-    './upload/resize_cache',
-    './upload/medialibrary',
-    './upload/iblock',
-    './upload/tmp',
-    './upload/uf',
-    './system/storage',
-    './image/cache',
-    './wp-content/cache',
-    './core/cache',
-    './assets/cache',
-    './logs',
-    './cache',
-    './administrator/cache',
-    './wa-cache',
-    './var/cache',
-    './wp-content/plugins/akeebabackupwp/app/tmp',
+    FOLDER . '/.git',
+    FOLDER . '/cgi-bin',
+    FOLDER . '/stats',
+    FOLDER . '/bitrix/sounds',
+    FOLDER . '/bitrix/services',
+    FOLDER . '/bitrix/panel',
+    FOLDER . '/bitrix/otp',
+    FOLDER . '/bitrix/legal',
+    FOLDER . '/bitrix/blocks',
+    FOLDER . '/bitrix/fonts',
+    FOLDER . '/bitrix/themes',
+    FOLDER . '/bitrix/gadgets',
+    FOLDER . '/bitrix/tmp',
+    FOLDER . '/bitrix/backup',
+    FOLDER . '/bitrix/images',
+    FOLDER . '/bitrix/cache',
+    FOLDER . '/bitrix/managed_cache',
+    FOLDER . '/bitrix/html_pages',
+    FOLDER . '/bitrix/stack_cache',
+    FOLDER . '/bitrix/updates',
+    FOLDER . '/bitrix/modules',
+    FOLDER . '/bitrix/wizards',
+    FOLDER . '/upload/resize_cache',
+    FOLDER . '/upload/medialibrary',
+    FOLDER . '/upload/iblock',
+    FOLDER . '/upload/tmp',
+    FOLDER . '/upload/uf',
+    FOLDER . '/system/storage',
+    FOLDER . '/image/cache',
+    FOLDER . '/wp-content/cache',
+    FOLDER . '/core/cache',
+    FOLDER . '/assets/cache',
+    FOLDER . '/logs',
+    FOLDER . '/cache',
+    FOLDER . '/administrator/cache',
+    FOLDER . '/wa-cache',
+    FOLDER . '/var/cache',
+    FOLDER . '/wp-content/plugins/akeebabackupwp/app/tmp',
 );
 
 // исключить из поиска файлы
@@ -471,14 +474,14 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
 <section>
 <header>Folders:</header>
 <slot>
-<?php list_recursive('.', $interrupted, $currentDepth); ?>
+<?php list_recursive(FOLDER, $interrupted, $currentDepth); ?>
 </slot>
 </section>
 <?=$interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>'; ?>
 <?php } elseif (SEARCH_STR) {
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
-            scan_recursive('.', $interrupted, $currentDepth);
+            scan_recursive(FOLDER, $interrupted, $currentDepth);
             echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed!</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > ', MAX_SEARCH_LEN - 1, '</output>';
