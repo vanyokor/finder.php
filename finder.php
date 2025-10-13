@@ -424,10 +424,10 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}</style>
+<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;top:20px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
 </head>
 <body>
-<form method="POST">
+<form method="POST" id="start">
 in 
 <?php
 // Доступные расширения файла
@@ -490,6 +490,13 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
         echo '<output>Request is too short.<br>',SEARCH_STR_LEN,' < ', MIN_SEARCH_LEN + 1, '</output>';
     }
 }
+if (!empty($_POST)){
 ?>
+<div id="end"></div>
+<aside>
+<a href="#start">⯅</a>
+<a href="#end">⯆</a>
+</aside>
+<?php } ?>
 </body>
 </html>
