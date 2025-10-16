@@ -5,7 +5,7 @@
     ❗Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта❗
 
 */
-const VERSION = '1.3.1';
+const VERSION = '1.4';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
@@ -35,7 +35,6 @@ const IGNORE_DIR = array(
     FOLDER . '/bitrix/html_pages',
     FOLDER . '/bitrix/stack_cache',
     FOLDER . '/bitrix/updates',
-    FOLDER . '/bitrix/modules',
     FOLDER . '/bitrix/wizards',
     FOLDER . '/upload/resize_cache',
     FOLDER . '/upload/medialibrary',
@@ -391,7 +390,7 @@ define('IS_WIDESCREEN', (bool) read_post_or_default(FIELD_WIDESCREEN, 0));
 
 // искомая строка
 define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
-define('SEARCH_STR_LEN', strlen(SEARCH_STR));
+define('SEARCH_STR_LEN', function_exists('mb_strlen') ? mb_strlen(SEARCH_STR) : strlen(SEARCH_STR));
 
 // Выбор расширения файла
 $file_extension_id = read_post_or_default(FIELD_FILE_EXTENSION, 0, FILE_EXTENSIONS_COUNT);
@@ -426,8 +425,8 @@ ini_set('max_execution_time', '60');
 <meta name="robots" content="noindex, nofollow"/>
 <style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
 </head>
-<body>
-<form method="POST" id="start">
+<body id="start">
+<form method="POST">
 in 
 <?php
 // Доступные расширения файла
