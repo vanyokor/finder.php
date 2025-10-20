@@ -164,7 +164,7 @@ function searching($content, $pos)
 /*
     Поиск в содержимом файла
 */
-function find_substr($content, $filename)
+function find_substr($content, $filename, &$foundFilesCount, &$foundSubstrCount)
 {
     $startpos = RESULTS_START_POS;
     $pos = 0;
@@ -185,7 +185,10 @@ function find_substr($content, $filename)
         }
         $pos = $newpos;
     }
-    if (count($matches)) {
+    $count = count($matches);
+    if ($count) {
+        ++$foundFilesCount;
+        $foundSubstrCount += $count;
         show_result(escape_str($filename), $matches);
     }
 }
@@ -272,7 +275,7 @@ function read_file($filepath)
 /*
     Рекурсивный поиск файлов, содержащих искомую строку
 */
-function scan_recursive($directory, &$interrupted, &$currentDepth)
+function scan_recursive($directory, &$interrupted, &$currentDepth, &$foundFilesCount, &$foundSubstrCount)
 {
     if ($currentDepth > DEPTH_LIMIT) {
         return;
@@ -284,14 +287,14 @@ function scan_recursive($directory, &$interrupted, &$currentDepth)
         } elseif (is_dir($filename)) {
             if (!in_array($filename, IGNORE_DIR)) {
                 ++$currentDepth;
-                scan_recursive($filename, $interrupted, $currentDepth);
+                scan_recursive($filename, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
                 --$currentDepth;
             }
         } else {
             if (is_correct_file($filename)) {
                 $content = read_file($filename);
                 if ($content !== false) {
-                    find_substr($content, $filename);
+                    find_substr($content, $filename, $foundFilesCount, $foundSubstrCount);
                 }
                 unset($content);
             }
@@ -410,6 +413,12 @@ $interrupted = false;
 // Текущая сканиуемая глубина
 $currentDepth = 1;
 
+// Счетчик подходящих файлов
+$foundFilesCount = 0;
+
+// Счетчик найденных подстрок 
+$foundSubstrCount = 0;
+
 // Защита от межсайтового скриптинга
 header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
 header('X-Frame-Options: DENY');
@@ -482,8 +491,9 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
 <?php } elseif (SEARCH_STR) {
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
-            scan_recursive(FOLDER, $interrupted, $currentDepth);
+            scan_recursive(FOLDER, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
             echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed!</p>';
+            echo '<p>Files found: ', $foundFilesCount, ', мatches: ',$foundSubstrCount, '</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > ', MAX_SEARCH_LEN - 1, '</output>';
         }
