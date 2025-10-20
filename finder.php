@@ -18,6 +18,7 @@ const IGNORE_DIR = array(
     FOLDER . '/.git',
     FOLDER . '/cgi-bin',
     FOLDER . '/stats',
+    FOLDER . '/awstats',
     FOLDER . '/bitrix/sounds',
     FOLDER . '/bitrix/services',
     FOLDER . '/bitrix/panel',
@@ -52,6 +53,7 @@ const IGNORE_DIR = array(
     FOLDER . '/wa-cache',
     FOLDER . '/var/cache',
     FOLDER . '/wp-content/plugins/akeebabackupwp/app/tmp',
+    FOLDER . '/seo_backup',
 );
 
 // исключить из поиска файлы
