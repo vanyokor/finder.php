@@ -111,6 +111,9 @@ define('MAX_DEPTH', 12);
 define('MIN_SEARCH_LEN', 3);
 define('MAX_SEARCH_LEN', 51);
 
+// Лимит количества найденных подстрок
+define('LIMIT_MATCHES', 10000);
+
 define('RESULTS_START_POS', 46);
 define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
@@ -303,7 +306,11 @@ function scan_recursive($directory, &$interrupted, &$currentDepth, &$foundFilesC
             }
         }
         if ((time() - START_TIME) > TIME_LIMIT) {
-            $interrupted = true;
+            $interrupted = INTERRUPT_TIME_EXPIRED;
+            return;
+        }
+        if ($foundSubstrCount > LIMIT_MATCHES) {
+            $interrupted = INTERRUPT_TOO_MANY_MATCHES;
             return;
         }
     }
@@ -332,7 +339,7 @@ function list_recursive($directory, &$interrupted, &$currentDepth)
             }
         }
         if ((time() - START_TIME) > TIME_LIMIT) {
-            $interrupted = true;
+            $interrupted = INTERRUPT_TIME_EXPIRED;
             return;
         }
     }
@@ -407,11 +414,13 @@ define('SEARCHED_FILE_EXTENSION', FILE_EXTENSIONS[$file_extension_id]);
 // Запуск поиска во всех файлах
 define('SEARCH_IN_ALL', $file_extension_id == (FILE_EXTENSIONS_COUNT - 1));
 
+// Флаг, прерван ли поиск
+const INTERRUPT_TIME_EXPIRED = 1;
+const INTERRUPT_TOO_MANY_MATCHES = 2;
+$interrupted = 0;
+
 // Отобразить отсканированные директории без чтения файлов
 $show_only_folders = $cur_mode == MODE_SHOW_FOLDER_NAMES;
-
-// Флаг, прерван ли поиск из-за таймаута
-$interrupted = false;
 
 // Текущая сканиуемая глубина
 $currentDepth = 1;
@@ -419,7 +428,7 @@ $currentDepth = 1;
 // Счетчик подходящих файлов
 $foundFilesCount = 0;
 
-// Счетчик найденных подстрок 
+// Счетчик найденных подстрок
 $foundSubstrCount = 0;
 
 // Защита от межсайтового скриптинга
@@ -437,7 +446,7 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
+<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
 </head>
 <body id="start">
 <form method="POST">
@@ -495,7 +504,16 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
             scan_recursive(FOLDER, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
-            echo $interrupted ? '<output>Search time has expired!</output>' : '<p>Search completed!</p>';
+            switch ($interrupted) {
+                case INTERRUPT_TIME_EXPIRED:
+                    echo '<output>Search time has expired!</output>';
+                    break;
+                case INTERRUPT_TOO_MANY_MATCHES:
+                    echo '<output>Too many matches!</output>';
+                    break;
+                default:
+                    echo '<p>Search completed!</p>';
+            }
             echo '<p>Files found: ', $foundFilesCount, ', мatches: ',$foundSubstrCount, '</p>';
         } else {
             echo '<output>Request is too long.<br>',SEARCH_STR_LEN,' > ', MAX_SEARCH_LEN - 1, '</output>';
@@ -504,8 +522,7 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
         echo '<output>Request is too short.<br>',SEARCH_STR_LEN,' < ', MIN_SEARCH_LEN + 1, '</output>';
     }
 }
-if (!empty($_POST)){
-?>
+if (!empty($_POST)) { ?>
 <div id="end"></div>
 <aside>
 <a href="#start">⯅</a>
