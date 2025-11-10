@@ -61,22 +61,22 @@ const IGNORE_DIR = array(
 
 // исключить из поиска файлы
 const IGNORE_FILE = array(
-    './finder.php',
+    FOLDER . '/finder.php',
 );
 
 // Скрывать содержимое файла
 const SENSITIVE_DATA_FILES = array(
-    './bitrix/.settings.php',
-    './bitrix/php_interface/dbconn.php',
-    './config.php',
-    './admin/config.php',
-    './wp-config.php',
-    './manager/includes/config.inc.php',
-    './core/config/config.inc.php',
-    './configuration.php',
-    './sites/default/settings.php',
-    './wa-config/db.php',
-    './wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php',
+    FOLDER . '/bitrix/.settings.php',
+    FOLDER . '/bitrix/php_interface/dbconn.php',
+    FOLDER . '/config.php',
+    FOLDER . '/admin/config.php',
+    FOLDER . '/wp-config.php',
+    FOLDER . '/manager/includes/config.inc.php',
+    FOLDER . '/core/config/config.inc.php',
+    FOLDER . '/configuration.php',
+    FOLDER . '/sites/default/settings.php',
+    FOLDER . '/wa-config/db.php',
+    FOLDER . '/wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php',
 );
 
 // Доступные для выбора расширения файлов
