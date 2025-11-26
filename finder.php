@@ -109,11 +109,11 @@ define('START_TIME', time());
 define('MAX_DEPTH', 12);
 
 // Запрос должен содержать ограниченную длину символов
-define('MIN_SEARCH_LEN', 3);
+define('MIN_SEARCH_LEN', 2);
 define('MAX_SEARCH_LEN', 51);
 
 // Лимит количества найденных подстрок
-define('LIMIT_MATCHES', 5000);
+define('LIMIT_MATCHES', 2000);
 
 define('RESULTS_START_POS', 46);
 define('RESULTS_END_POS', 126);
