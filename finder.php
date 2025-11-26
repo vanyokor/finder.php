@@ -19,6 +19,7 @@ const SKIP_SYMLINKS = true;
 // исключить из поиска директории
 const IGNORE_DIR = array(
     FOLDER . '/.git',
+    FOLDER . '/.well-known',
     FOLDER . '/cgi-bin',
     FOLDER . '/stats',
     FOLDER . '/awstats',
@@ -112,7 +113,7 @@ define('MIN_SEARCH_LEN', 3);
 define('MAX_SEARCH_LEN', 51);
 
 // Лимит количества найденных подстрок
-define('LIMIT_MATCHES', 10000);
+define('LIMIT_MATCHES', 5000);
 
 define('RESULTS_START_POS', 46);
 define('RESULTS_END_POS', 126);
@@ -184,9 +185,9 @@ function find_substr($content, $filename, &$foundFilesCount, &$foundSubstrCount)
             $matches[] = array('content contains &quot;', escape_str(SEARCH_STR), '&quot;');
         } else {
             $matches[] = array(
-                escape_str(substr($content, $pos - $startpos, $startpos)),
-                escape_str(substr($content, $pos, SEARCH_STR_LEN)),
-                escape_str(substr($content, $newpos, RESULTS_END_POS))
+                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $pos - $startpos, $startpos)),
+                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $pos, SEARCH_STR_LEN)),
+                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $newpos, RESULTS_END_POS))
             );
         }
         $pos = $newpos;
@@ -397,8 +398,13 @@ $cur_mode = read_post_or_default(FIELD_MODE, 0, MODES_COUNT);
 // Выбранная глубина вложенности
 define('DEPTH_LIMIT', read_post_or_default(FIELD_CUR_DEPTH, MAX_DEPTH, MAX_DEPTH));
 
+// Поддержка многобайтовых строк
+define('SUBSTR_FUNC_NAME', function_exists('mb_substr') ? 'mb_substr' : 'substr');
+define('STRPOS_FUNC_NAME', function_exists('mb_strpos') ? 'mb_strpos' : 'strpos');
+define('STRIPOS_FUNC_NAME', function_exists('mb_stripos') ? 'mb_stripos' : 'stripos');
+
 // Чувствительность к регистру
-define('SEARCH_FUNC_NAME', $cur_mode == MODE_SENSITIVE ? 'strpos' : 'stripos');
+define('SEARCH_FUNC_NAME', $cur_mode == MODE_SENSITIVE ? STRPOS_FUNC_NAME : STRIPOS_FUNC_NAME);
 
 // Полноэкранный режим
 define('IS_WIDESCREEN', (bool) read_post_or_default(FIELD_WIDESCREEN, 0));
@@ -446,7 +452,7 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
+<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
 </head>
 <body id="start">
 <form method="POST">
