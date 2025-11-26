@@ -119,7 +119,7 @@ define('RESULTS_START_POS', 46);
 define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
 define('SECONDS_PER_DAY', 86400);
-define('FILE_SIZE_LIMIT', 512000);
+
 const ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
 const REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
 
@@ -127,6 +127,7 @@ define('FIELD_FILE_EXTENSION', 'file_extension');
 define('FIELD_WIDESCREEN', 'widescreen');
 define('FIELD_CUR_DEPTH', 'cur_depth');
 define('FIELD_MODE', 'mode');
+define('FIELD_FILE_SIZE_LIMIT', 'file_size_limit');
 
 
 /*
@@ -398,6 +399,25 @@ $cur_mode = read_post_or_default(FIELD_MODE, 0, MODES_COUNT);
 // Выбранная глубина вложенности
 define('DEPTH_LIMIT', read_post_or_default(FIELD_CUR_DEPTH, MAX_DEPTH, MAX_DEPTH));
 
+// Лимит размера файла
+$file_size_limits = array(
+    512000,
+    128000,
+    32000,
+    8000,
+    1000
+);
+$front_file_size_limits = array(
+    '< 512 kb',
+    '< 128 kb',
+    '< 32 kb',
+    '< 8 kb',
+    '< 1 kb'
+);
+$front_file_size_limit = read_post_or_default(FIELD_FILE_SIZE_LIMIT, 0, count($file_size_limits));
+define('FILE_SIZE_LIMIT', $file_size_limits[$front_file_size_limit]);
+unset($file_size_limits);
+
 // Поддержка многобайтовых строк
 define('SUBSTR_FUNC_NAME', function_exists('mb_substr') ? 'mb_substr' : 'substr');
 define('STRPOS_FUNC_NAME', function_exists('mb_strpos') ? 'mb_strpos' : 'strpos');
@@ -488,6 +508,14 @@ show_select_field(FIELD_CUR_DEPTH, $depths, DEPTH_LIMIT);
 unset($depths);
 ?>
  folders
+</label>
+<label>
+File size limit: 
+<?php
+// Лимит размера файла
+show_select_field(FIELD_FILE_SIZE_LIMIT, $front_file_size_limits, $front_file_size_limit);
+unset($front_file_size_limits, $front_file_size_limit);
+?>
 </label>
 <label>
 Widescreen: 
