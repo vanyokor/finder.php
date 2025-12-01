@@ -1,9 +1,7 @@
 <?php
 /*
-
-      Инструкция: https://github.com/vanyokor/finder.php/blob/main/README.md
-    ❗Пожалуйста, не забывайте удалять скрипт, для сохранения безопасности сайта❗
-
+    ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
+    Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
 const VERSION = '1.4';
 
@@ -170,6 +168,15 @@ function searching($content, $pos)
 
 
 /*
+    Вернуть отрывок из текста в файле
+*/
+function excerpt($content, $start, $end)
+{
+    return escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $start, $end));
+}
+
+
+/*
     Поиск в содержимом файла
 */
 function find_substr($content, $filename, &$foundFilesCount, &$foundSubstrCount)
@@ -186,9 +193,9 @@ function find_substr($content, $filename, &$foundFilesCount, &$foundSubstrCount)
             $matches[] = array('content contains &quot;', escape_str(SEARCH_STR), '&quot;');
         } else {
             $matches[] = array(
-                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $pos - $startpos, $startpos)),
-                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $pos, SEARCH_STR_LEN)),
-                escape_str(call_user_func(SUBSTR_FUNC_NAME, $content, $newpos, RESULTS_END_POS))
+                excerpt($content, $pos - $startpos, $startpos),
+                excerpt($content, $pos, SEARCH_STR_LEN),
+                excerpt($content, $newpos, RESULTS_END_POS)
             );
         }
         $pos = $newpos;
