@@ -93,6 +93,7 @@ define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
 // Режимы сканирования
 const MODES = array(
     'default',
+    // TODO add case-insensitive mode
     'case sensitive',
     'just show all folder names',
 );
@@ -111,12 +112,12 @@ define('MIN_SEARCH_LEN', 2);
 define('MAX_SEARCH_LEN', 51);
 
 // Лимит количества найденных подстрок
-define('LIMIT_MATCHES', 2000);
+define('LIMIT_MATCHES', 2500);
 
 define('RESULTS_START_POS', 46);
 define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
-define('SECONDS_PER_DAY', 86400);
+define('SCRIPT_TIMEOUT', 28800);
 
 const ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
 const REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
@@ -380,8 +381,8 @@ function read_post_or_default($name, $default = 0, $maxValue = 2)
 }
 
 
-// Самоудаление скрипта, при попытке запуска, через сутки
-if (time() > (filectime(__FILE__) + SECONDS_PER_DAY)) {
+// Самоудаление скрипта, при попытке запуска, через некоторое время
+if (time() > (filectime(__FILE__) + SCRIPT_TIMEOUT)) {
     @unlink(__FILE__);
     exit('file timeout');
 }
@@ -408,6 +409,7 @@ define('DEPTH_LIMIT', read_post_or_default(FIELD_CUR_DEPTH, MAX_DEPTH, MAX_DEPTH
 
 // Лимит размера файла
 $file_size_limits = array(
+    1024000,
     512000,
     128000,
     32000,
@@ -415,13 +417,14 @@ $file_size_limits = array(
     1000
 );
 $front_file_size_limits = array(
+    '< 1 Mb',
     '< 512 kb',
     '< 128 kb',
     '< 32 kb',
     '< 8 kb',
     '< 1 kb'
 );
-$front_file_size_limit = read_post_or_default(FIELD_FILE_SIZE_LIMIT, 0, count($file_size_limits));
+$front_file_size_limit = read_post_or_default(FIELD_FILE_SIZE_LIMIT, 2, count($file_size_limits));
 define('FILE_SIZE_LIMIT', $file_size_limits[$front_file_size_limit]);
 unset($file_size_limits);
 
@@ -503,6 +506,14 @@ unset($cur_mode);
 ?>
 </label>
 <label>
+File size limit: 
+<?php
+// Лимит размера файла
+show_select_field(FIELD_FILE_SIZE_LIMIT, $front_file_size_limits, $front_file_size_limit);
+unset($front_file_size_limits, $front_file_size_limit);
+?>
+</label>
+<label>
 Max depth: 
 <?php
 // Глубина сканирования
@@ -515,14 +526,6 @@ show_select_field(FIELD_CUR_DEPTH, $depths, DEPTH_LIMIT);
 unset($depths);
 ?>
  folders
-</label>
-<label>
-File size limit: 
-<?php
-// Лимит размера файла
-show_select_field(FIELD_FILE_SIZE_LIMIT, $front_file_size_limits, $front_file_size_limit);
-unset($front_file_size_limits, $front_file_size_limit);
-?>
 </label>
 <label>
 Widescreen: 
