@@ -93,12 +93,11 @@ define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
 // Режимы сканирования
 const MODES = array(
     'default',
-    // TODO add case-insensitive mode
-    'case sensitive',
+    'case-insensitive',
     'just show all folder names',
 );
 define('MODES_COUNT', count(MODES));
-define('MODE_SENSITIVE', 1);
+define('MODE_CASE_INSENSITIVE', 1);
 define('MODE_SHOW_FOLDER_NAMES', 2);
 
 // запуск таймера, чтобы скрипт не сканировал больше минуты
@@ -434,7 +433,7 @@ define('STRPOS_FUNC_NAME', function_exists('mb_strpos') ? 'mb_strpos' : 'strpos'
 define('STRIPOS_FUNC_NAME', function_exists('mb_stripos') ? 'mb_stripos' : 'stripos');
 
 // Чувствительность к регистру
-define('SEARCH_FUNC_NAME', $cur_mode == MODE_SENSITIVE ? STRPOS_FUNC_NAME : STRIPOS_FUNC_NAME);
+define('SEARCH_FUNC_NAME', $cur_mode == MODE_CASE_INSENSITIVE ? STRIPOS_FUNC_NAME : STRPOS_FUNC_NAME);
 
 // Полноэкранный режим
 define('IS_WIDESCREEN', (bool) read_post_or_default(FIELD_WIDESCREEN, 0));
