@@ -372,7 +372,7 @@ function escape_str($text)
 */
 function read_post_or_default($name, $default = 0, $maxValue = 2)
 {
-    if ($_POST){
+    if ($_POST) {
         $selected = (int)filter_input(INPUT_POST, $name, FILTER_SANITIZE_NUMBER_INT);
         if (($selected >= 0) && ($selected < $maxValue)) {
             return $selected;
