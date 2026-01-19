@@ -80,15 +80,23 @@ const SENSITIVE_DATA_FILES = array(
 
 // Доступные для выбора расширения файлов
 const FILE_EXTENSIONS = array(
-    '.php',
-    '.js',
     '.css',
     '.html',
+    '.js',
+    '.json',
+    '.md',
+    '.php',
+    '.pug',
+    '.scss',
     '.tpl',
+    '.ts',
     '.twig',
+    '.txt',
+    '.xml',
     'all',
 );
 define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
+define('PHP_EXTENSIONS_POS', 5);
 
 // Режимы сканирования
 const MODES = array(
@@ -425,7 +433,9 @@ $front_file_size_limits = array(
     '< 8 kb',
     '< 1 kb'
 );
-$front_file_size_limit = read_post_or_default(FIELD_FILE_SIZE_LIMIT, 2, count($file_size_limits));
+define('DEFAULT_FILE_SIZE_LIMIT_POS', 2);
+
+$front_file_size_limit = read_post_or_default(FIELD_FILE_SIZE_LIMIT, DEFAULT_FILE_SIZE_LIMIT_POS, count($file_size_limits));
 define('FILE_SIZE_LIMIT', $file_size_limits[$front_file_size_limit]);
 unset($file_size_limits);
 
@@ -445,7 +455,7 @@ define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
 define('SEARCH_STR_LEN', function_exists('mb_strlen') ? mb_strlen(SEARCH_STR) : strlen(SEARCH_STR));
 
 // Выбор расширения файла
-$file_extension_id = read_post_or_default(FIELD_FILE_EXTENSION, 0, FILE_EXTENSIONS_COUNT);
+$file_extension_id = read_post_or_default(FIELD_FILE_EXTENSION, PHP_EXTENSIONS_POS, FILE_EXTENSIONS_COUNT);
 define('SEARCHED_FILE_EXTENSION', FILE_EXTENSIONS[$file_extension_id]);
 
 // Запуск поиска во всех файлах
