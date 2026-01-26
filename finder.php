@@ -3,7 +3,7 @@
     ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
-const VERSION = '1.4';
+const VERSION = '1.5dev';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
@@ -390,6 +390,32 @@ function read_post_or_default($name, $default = 0, $maxValue = 2)
 }
 
 
+/*
+    Вывод статического контента
+*/
+function static_file($type)
+{
+    if (isset($_SERVER["HTTP_IF_MODIFIED_SINCE"])) {
+        header("HTTP/1.1 304 Not Modified");
+        exit;
+    }
+    header("Expires: ".gmdate("D, d M Y H:i:s", time() + 365 * 24 * 60 * 60)." GMT");
+    header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
+    header("Cache-Control: immutable");
+    switch ($type) {
+        case 'css':
+            header("Content-Type: text/css; charset=utf-8");
+            echo '*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}.w{max-width:1460px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}';
+            break;
+    }
+    exit();
+}
+
+
+// Проверка на запросы статики
+if (isset($_GET['static'])) {
+    static_file($_GET['static']);
+}
 // Самоудаление скрипта, при попытке запуска, через некоторое время
 if (time() > (filectime(__FILE__) + SCRIPT_TIMEOUT)) {
     @unlink(__FILE__);
@@ -479,7 +505,7 @@ $foundFilesCount = 0;
 $foundSubstrCount = 0;
 
 // Защита от межсайтового скриптинга
-header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
+header("Content-Security-Policy: default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'");
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 
@@ -493,9 +519,9 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<style>*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:<?=IS_WIDESCREEN ? '1460px' : '800px'?>;margin:10px auto 60px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}</style>
+<link rel="stylesheet" href="?static=css">
 </head>
-<body id="start">
+<body id="start"<?=IS_WIDESCREEN ? ' class="w"' : ''?>>
 <form method="POST">
 in 
 <?php
