@@ -446,6 +446,7 @@ define('DEPTH_LIMIT', read_post_or_default(FIELD_CUR_DEPTH, MAX_DEPTH, MAX_DEPTH
 $file_size_limits = array(
     1024000,
     512000,
+    256000,
     128000,
     32000,
     8000,
@@ -454,6 +455,7 @@ $file_size_limits = array(
 $front_file_size_limits = array(
     '< 1 Mb',
     '< 512 kb',
+    '< 256 kb',
     '< 128 kb',
     '< 32 kb',
     '< 8 kb',
