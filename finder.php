@@ -15,7 +15,7 @@ const FOLDER = '.';
 const SKIP_SYMLINKS = true;
 
 // исключить из поиска директории
-const IGNORE_DIR = array(
+$ignore_dir = array(
     FOLDER . '/.git',
     FOLDER . '/.well-known',
     FOLDER . '/cgi-bin',
@@ -59,12 +59,16 @@ const IGNORE_DIR = array(
 );
 
 // исключить из поиска файлы
-const IGNORE_FILE = array(
+$ignore_file = array(
     FOLDER . '/finder.php',
 );
 
 // Скрывать содержимое файла
-const SENSITIVE_DATA_FILES = array(
+$sensitive_data_files = array(
+    FOLDER . '/.htaccess',
+    FOLDER . '/.htaccess.restore',
+    FOLDER . '/.htaccess_old',
+    FOLDER . '/php.ini',
     FOLDER . '/bitrix/.settings.php',
     FOLDER . '/bitrix/php_interface/dbconn.php',
     FOLDER . '/config.php',
@@ -134,6 +138,7 @@ define('FIELD_WIDESCREEN', 'widescreen');
 define('FIELD_CUR_DEPTH', 'cur_depth');
 define('FIELD_MODE', 'mode');
 define('FIELD_FILE_SIZE_LIMIT', 'file_size_limit');
+define('IS_POST', !empty($_POST));
 
 
 /*
@@ -380,13 +385,42 @@ function escape_str($text)
 */
 function read_post_or_default($name, $default = 0, $maxValue = 2)
 {
-    if ($_POST) {
+    if (IS_POST) {
         $selected = (int)filter_input(INPUT_POST, $name, FILTER_SANITIZE_NUMBER_INT);
         if (($selected >= 0) && ($selected < $maxValue)) {
             return $selected;
         }
     }
     return $default;
+}
+
+
+/*
+    Удаление из списка отсутствующих папок или файлов
+*/
+function list_path_exists(&$list)
+{
+    foreach ($list as $key => $path) {
+        if (!file_exists($path)){
+            unset($list[$key]);
+        }
+    }
+}
+
+
+/*
+    Вычисление наличия игнорируемых папок до запуска поиска
+*/
+function scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files)
+{
+    if (IS_POST) {
+        list_path_exists($ignore_dir);
+        list_path_exists($ignore_file);
+        list_path_exists($sensitive_data_files);
+        define('IGNORE_DIR', $ignore_dir);
+        define('IGNORE_FILE', $ignore_file);
+        define('SENSITIVE_DATA_FILES', $sensitive_data_files);
+    };
 }
 
 
@@ -435,6 +469,10 @@ if (isset($_GET['delete'])) {
 if (!isset($_GET[STARTER])) {
     die();
 }
+
+// Оптимизация списков игнорирования, путем удаления из него отсутствующих на сайте элементов
+scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
+unset($ignore_dir, $ignore_file, $sensitive_data_files);
 
 // Выбранный режим сканирования
 $cur_mode = read_post_or_default(FIELD_MODE, 0, MODES_COUNT);
@@ -519,7 +557,7 @@ ini_set('max_execution_time', '60');
 <html>
 <head>
 <meta charset="UTF-8">
-<title>finder v<?=VERSION?></title>
+<title>finder v<?=VERSION?> PHP<?=phpversion()?></title>
 <meta name="robots" content="noindex, nofollow"/>
 <link rel="stylesheet" href="?static=css">
 </head>
@@ -605,7 +643,7 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
         echo '<output>Request is too short.<br>',SEARCH_STR_LEN,' < ', MIN_SEARCH_LEN + 1, '</output>';
     }
 }
-if (!empty($_POST)) { ?>
+if (IS_POST) { ?>
 <div id="end"></div>
 <aside>
 <a href="#start">⯅</a>
