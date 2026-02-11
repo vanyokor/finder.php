@@ -198,6 +198,10 @@ function find_substr($content, $ignoring, $filename, &$foundFilesCount, &$foundS
     $pos = 0;
     $matches = array();
 
+    if (!preg_match('//u', $content) && function_exists('mb_convert_encoding')) {
+        $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1251');
+    }
+
     while (($pos = searching($content, $pos)) !== false) {
         if ($pos < $startpos) {
             $startpos = $pos;
