@@ -192,17 +192,18 @@ function excerpt($content, $start, $end)
 /*
     Поиск в содержимом файла
 */
-function find_substr($content, $filename, &$foundFilesCount, &$foundSubstrCount)
+function find_substr($content, $ignoring, $filename, &$foundFilesCount, &$foundSubstrCount)
 {
     $startpos = RESULTS_START_POS;
     $pos = 0;
     $matches = array();
+
     while (($pos = searching($content, $pos)) !== false) {
         if ($pos < $startpos) {
             $startpos = $pos;
         }
         $newpos = $pos + SEARCH_STR_LEN;
-        if (in_array($filename, SENSITIVE_DATA_FILES)) {
+        if (in_array($filename, $ignoring['sensitive'])) {
             $matches[] = array('content contains &quot;', escape_str(SEARCH_STR), '&quot;');
         } else {
             $matches[] = array(
@@ -263,10 +264,10 @@ function is_correct_extension($file)
 /*
     Проверка на подходящий для чтения файл
 */
-function is_correct_file($file)
+function is_correct_file($file, $ignoring)
 {
     if (is_correct_extension($file)) {
-        if (!in_array($file, IGNORE_FILE)) {
+        if (!in_array($file, $ignoring['files'])) {
             if (is_readable($file)) {
                 $filesize = filesize($file);
                 if ($filesize) {
@@ -303,7 +304,7 @@ function read_file($filepath)
 /*
     Рекурсивный поиск файлов, содержащих искомую строку
 */
-function scan_recursive($directory, &$interrupted, &$currentDepth, &$foundFilesCount, &$foundSubstrCount)
+function scan_recursive($directory, $ignoring, &$interrupted, &$currentDepth, &$foundFilesCount, &$foundSubstrCount)
 {
     if ($currentDepth > DEPTH_LIMIT) {
         return;
@@ -313,16 +314,16 @@ function scan_recursive($directory, &$interrupted, &$currentDepth, &$foundFilesC
         if (SKIP_SYMLINKS && is_link($filename)) {
             continue;
         } elseif (is_dir($filename)) {
-            if (!in_array($filename, IGNORE_DIR)) {
+            if (!in_array($filename, $ignoring['dirs'])) {
                 ++$currentDepth;
-                scan_recursive($filename, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
+                scan_recursive($filename, $ignoring, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
                 --$currentDepth;
             }
         } else {
-            if (is_correct_file($filename)) {
+            if (is_correct_file($filename, $ignoring)) {
                 $content = read_file($filename);
                 if ($content !== false) {
-                    find_substr($content, $filename, $foundFilesCount, $foundSubstrCount);
+                    find_substr($content, $ignoring, $filename, $foundFilesCount, $foundSubstrCount);
                 }
                 unset($content);
             }
@@ -342,7 +343,7 @@ function scan_recursive($directory, &$interrupted, &$currentDepth, &$foundFilesC
 /*
     Отображение сканируемых директорий
 */
-function list_recursive($directory, &$interrupted, &$currentDepth)
+function list_recursive($directory, $ignoring, &$interrupted, &$currentDepth)
 {
     if ($currentDepth > DEPTH_LIMIT) {
         return;
@@ -353,10 +354,10 @@ function list_recursive($directory, &$interrupted, &$currentDepth)
         if (SKIP_SYMLINKS && is_link($filename)) {
             continue;
         } elseif (is_dir($filename)) {
-            if (!in_array($filename, IGNORE_DIR)) {
+            if (!in_array($filename, $ignoring['dirs'])) {
                 ++$currentDepth;
                 echo '<li>',$filename,'</li>';
-                list_recursive($filename, $interrupted, $currentDepth);
+                list_recursive($filename, $ignoring, $interrupted, $currentDepth);
                 --$currentDepth;
             }
         }
@@ -413,14 +414,14 @@ function list_path_exists(&$list)
 */
 function scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files)
 {
-    if (IS_POST) {
-        list_path_exists($ignore_dir);
-        list_path_exists($ignore_file);
-        list_path_exists($sensitive_data_files);
-        define('IGNORE_DIR', $ignore_dir);
-        define('IGNORE_FILE', $ignore_file);
-        define('SENSITIVE_DATA_FILES', $sensitive_data_files);
-    };
+    list_path_exists($ignore_dir);
+    list_path_exists($ignore_file);
+    list_path_exists($sensitive_data_files);
+    return array(
+        'dirs' => $ignore_dir, 
+        'files' => $ignore_file, 
+        'sensitive' => $sensitive_data_files
+    );
 }
 
 
@@ -471,7 +472,9 @@ if (!isset($_GET[STARTER])) {
 }
 
 // Оптимизация списков игнорирования, путем удаления из него отсутствующих на сайте элементов
-scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
+if (IS_POST) {
+$ignoring = scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
+}
 unset($ignore_dir, $ignore_file, $sensitive_data_files);
 
 // Выбранный режим сканирования
@@ -617,14 +620,14 @@ show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN)
 <section>
 <header>Folders:</header>
 <slot>
-<?php list_recursive(FOLDER, $interrupted, $currentDepth); ?>
+<?php list_recursive(FOLDER, $ignoring, $interrupted, $currentDepth); ?>
 </slot>
 </section>
 <?=$interrupted ? '<output>Scan time has expired!</output>' : '<p>Scan completed!</p>'; ?>
 <?php } elseif (SEARCH_STR) {
     if (SEARCH_STR_LEN > MIN_SEARCH_LEN) {
         if (SEARCH_STR_LEN < MAX_SEARCH_LEN) {
-            scan_recursive(FOLDER, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
+            scan_recursive(FOLDER, $ignoring, $interrupted, $currentDepth, $foundFilesCount, $foundSubstrCount);
             switch ($interrupted) {
                 case INTERRUPT_TIME_EXPIRED:
                     echo '<output>Search time has expired!</output>';
