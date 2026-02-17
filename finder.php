@@ -125,7 +125,7 @@ define('MAX_SEARCH_LEN', 51);
 // Лимит количества найденных подстрок
 define('LIMIT_MATCHES', 2500);
 
-define('RESULTS_START_POS', 46);
+define('RESULTS_START_POS', 72);
 define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
 define('SCRIPT_TIMEOUT', 28800);
@@ -134,7 +134,7 @@ const ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
 const REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
 
 define('FIELD_FILE_EXTENSION', 'file_extension');
-define('FIELD_WIDESCREEN', 'widescreen');
+define('FIELD_SHOW_CONTENT', 'show_content');
 define('FIELD_CUR_DEPTH', 'cur_depth');
 define('FIELD_MODE', 'mode');
 define('FIELD_FILE_SIZE_LIMIT', 'file_size_limit');
@@ -161,11 +161,13 @@ function show_select_field($name, $list, $current)
 /*
     Вывод положительного результата поиска
 */
-function show_result($filename, $matches)
+function show_result($filename, $count, $matches)
 {
-    echo '<section><header>',$filename,'</header>';
+    echo '<section><header>',$filename,' (',$count,')</header>';
     foreach ($matches as $match) {
-        echo '<code>', $match[0], '<b>', $match[1], '</b>', $match[2], '</code>';
+        if ($match) {
+            echo '<code>', $match[0], '<b>', $match[1], '</b>', $match[2], '</code>';
+        }
     }
     echo '</section>';
 }
@@ -203,18 +205,23 @@ function find_substr($content, $ignoring, $filename, &$foundFilesCount, &$foundS
     }
 
     while (($pos = searching($content, $pos)) !== false) {
-        if ($pos < $startpos) {
-            $startpos = $pos;
-        }
         $newpos = $pos + SEARCH_STR_LEN;
-        if (in_array($filename, $ignoring['sensitive'])) {
-            $matches[] = array('content contains &quot;', escape_str(SEARCH_STR), '&quot;');
+        if (IS_SHOW_CONTENT) {
+            if ($pos < $startpos) {
+                $startpos = $pos;
+            }
+
+            if (in_array($filename, $ignoring['sensitive'])) {
+                $matches[] = array('content contains &quot;', escape_str(SEARCH_STR), '&quot;');
+            } else {
+                $matches[] = array(
+                    excerpt($content, $pos - $startpos, $startpos),
+                    excerpt($content, $pos, SEARCH_STR_LEN),
+                    excerpt($content, $newpos, RESULTS_END_POS)
+                );
+            }
         } else {
-            $matches[] = array(
-                excerpt($content, $pos - $startpos, $startpos),
-                excerpt($content, $pos, SEARCH_STR_LEN),
-                excerpt($content, $newpos, RESULTS_END_POS)
-            );
+            $matches[] = null;
         }
         $pos = $newpos;
     }
@@ -222,7 +229,7 @@ function find_substr($content, $ignoring, $filename, &$foundFilesCount, &$foundS
     if ($count) {
         ++$foundFilesCount;
         $foundSubstrCount += $count;
-        show_result(escape_str($filename), $matches);
+        show_result(escape_str($filename), $count, $matches);
     }
 }
 
@@ -406,7 +413,7 @@ function read_post_or_default($name, $default = 0, $maxValue = 2)
 function list_path_exists(&$list)
 {
     foreach ($list as $key => $path) {
-        if (!file_exists($path)){
+        if (!file_exists($path)) {
             unset($list[$key]);
         }
     }
@@ -422,8 +429,8 @@ function scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files)
     list_path_exists($ignore_file);
     list_path_exists($sensitive_data_files);
     return array(
-        'dirs' => $ignore_dir, 
-        'files' => $ignore_file, 
+        'dirs' => $ignore_dir,
+        'files' => $ignore_file,
         'sensitive' => $sensitive_data_files
     );
 }
@@ -444,7 +451,7 @@ function static_file($type)
     switch ($type) {
         case 'css':
             header("Content-Type: text/css; charset=utf-8");
-            echo '*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;max-width:800px;margin:10px auto 60px}.w{max-width:1460px}form,p,output{text-align:center;font-size:small;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{font-size:small;overflow-wrap:break-word;font-weight:700}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 388px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;font-size:small;text-align:center;}aside a:hover{opacity:.7;}';
+            echo '*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;margin:10px 30px 60px}form,p,output{text-align:center;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px}header{overflow-wrap:break-word;font-weight:700;text-align:center}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{medium;background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;bottom:12px;right:calc(50% - 42px);padding:3px;border-radius:3px;backdrop-filter:blur(3px);border:1px solid #dfdfdf63;user-select:none;}aside a{padding:7px;background:#424146;opacity:.5;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;text-align:center;}aside a:hover{opacity:.7;}';
             break;
     }
     exit();
@@ -477,7 +484,7 @@ if (!isset($_GET[STARTER])) {
 
 // Оптимизация списков игнорирования, путем удаления из него отсутствующих на сайте элементов
 if (IS_POST) {
-$ignoring = scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
+    $ignoring = scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
 }
 unset($ignore_dir, $ignore_file, $sensitive_data_files);
 
@@ -521,7 +528,7 @@ define('STRIPOS_FUNC_NAME', function_exists('mb_stripos') ? 'mb_stripos' : 'stri
 define('SEARCH_FUNC_NAME', $cur_mode == MODE_CASE_INSENSITIVE ? STRIPOS_FUNC_NAME : STRPOS_FUNC_NAME);
 
 // Полноэкранный режим
-define('IS_WIDESCREEN', (bool) read_post_or_default(FIELD_WIDESCREEN, 0));
+define('IS_SHOW_CONTENT', (bool) read_post_or_default(FIELD_SHOW_CONTENT, 1));
 
 // искомая строка
 define('SEARCH_STR', (string)filter_input(INPUT_POST, 'search_str'));
@@ -568,7 +575,7 @@ ini_set('max_execution_time', '60');
 <meta name="robots" content="noindex, nofollow"/>
 <link rel="stylesheet" href="?static=css">
 </head>
-<body id="start"<?=IS_WIDESCREEN ? ' class="w"' : ''?>>
+<body id="start">
 <form method="POST">
 in 
 <?php
@@ -612,10 +619,10 @@ unset($depths);
  folders
 </label>
 <label>
-Widescreen: 
+Show content: 
 <?php
 // Широкоэкранный режим
-show_select_field(FIELD_WIDESCREEN, array(0 => 'no', 1 => 'yes'), IS_WIDESCREEN);
+show_select_field(FIELD_SHOW_CONTENT, array(0 => 'no', 1 => 'yes'), IS_SHOW_CONTENT);
 ?>
 </label>
 </details>
