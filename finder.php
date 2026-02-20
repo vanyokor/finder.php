@@ -3,6 +3,10 @@
     ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
 const VERSION = '1.5dev';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
