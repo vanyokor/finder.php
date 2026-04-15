@@ -577,7 +577,7 @@ ini_set('max_execution_time', '60');
 <meta charset="UTF-8">
 <title>finder v<?=VERSION?> PHP<?=phpversion()?></title>
 <meta name="robots" content="noindex, nofollow"/>
-<link rel="stylesheet" href="?static=css">
+<link rel="stylesheet" href="?static=css&v=<?=VERSION?>">
 </head>
 <body id="start">
 <form method="POST">
