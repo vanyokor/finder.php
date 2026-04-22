@@ -3,11 +3,7 @@
     ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
-ini_set('error_reporting', E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
-const VERSION = '1.5dev';
+const VERSION = '1.5';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
@@ -531,7 +527,7 @@ define('STRIPOS_FUNC_NAME', function_exists('mb_stripos') ? 'mb_stripos' : 'stri
 // Чувствительность к регистру
 define('SEARCH_FUNC_NAME', $cur_mode == MODE_CASE_INSENSITIVE ? STRIPOS_FUNC_NAME : STRPOS_FUNC_NAME);
 
-// Полноэкранный режим
+// Отобразить контент
 define('IS_SHOW_CONTENT', (bool) read_post_or_default(FIELD_SHOW_CONTENT, 1));
 
 // искомая строка
@@ -575,7 +571,7 @@ ini_set('max_execution_time', '60');
 <html>
 <head>
 <meta charset="UTF-8">
-<title>finder v<?=VERSION?> PHP<?=phpversion()?></title>
+<title>finder v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
 <link rel="stylesheet" href="?static=css&v=<?=VERSION?>">
 </head>
@@ -625,7 +621,7 @@ unset($depths);
 <label>
 Show content: 
 <?php
-// Широкоэкранный режим
+// Отобразить контент
 show_select_field(FIELD_SHOW_CONTENT, array(0 => 'no', 1 => 'yes'), IS_SHOW_CONTENT);
 ?>
 </label>
