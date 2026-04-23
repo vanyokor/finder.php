@@ -65,6 +65,8 @@ $ignore_file = array(
 
 // Скрывать содержимое файла
 $sensitive_data_files = array(
+    FOLDER . '/.env',
+    FOLDER . '/config/database.php',
     FOLDER . '/.htaccess',
     FOLDER . '/.htaccess.restore',
     FOLDER . '/.htaccess_old',
