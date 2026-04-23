@@ -96,6 +96,7 @@ const FILE_EXTENSIONS = array(
     '.ts',
     '.twig',
     '.txt',
+    '.vue',
     '.xml',
     'all',
 );
