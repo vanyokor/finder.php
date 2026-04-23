@@ -571,7 +571,7 @@ ini_set('max_execution_time', '60');
 <html>
 <head>
 <meta charset="UTF-8">
-<title>finder v<?=VERSION?></title>
+<title>finder.php v<?=VERSION?></title>
 <meta name="robots" content="noindex, nofollow"/>
 <link rel="stylesheet" href="?static=css&v=<?=VERSION?>">
 </head>
