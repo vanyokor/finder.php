@@ -76,6 +76,7 @@ $sensitive_data_files = array(
     FOLDER . '/config.php',
     FOLDER . '/admin/config.php',
     FOLDER . '/wp-config.php',
+    FOLDER . '/admin/includes/config.inc.php',
     FOLDER . '/manager/includes/config.inc.php',
     FOLDER . '/core/config/config.inc.php',
     FOLDER . '/configuration.php',
