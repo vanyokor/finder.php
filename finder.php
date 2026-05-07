@@ -54,6 +54,7 @@ $ignore_dir = array(
     FOLDER . '/administrator/cache',
     FOLDER . '/wa-cache',
     FOLDER . '/var/cache',
+    FOLDER . '/vqmod/vqcache',
     FOLDER . '/wp-content/plugins/akeebabackupwp/app/tmp',
     FOLDER . '/seo_backup',
 );
