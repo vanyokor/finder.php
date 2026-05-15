@@ -8,11 +8,32 @@ const VERSION = '1.5';
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
 
-// корневая папка для сканирования ('.' - текущая)
+// корневая папка для сканирования ('.' - текущая, '..' - родительская)
 const FOLDER = '.';
 
 // Пропускать символьные ссылки
 const SKIP_SYMLINKS = true;
+
+// Доступные для выбора расширения файлов
+const FILE_EXTENSIONS = array(
+    '.css',
+    '.html',
+    '.js',
+    '.json',
+    '.md',
+    '.php',
+    '.pug',
+    '.scss',
+    '.tpl',
+    '.ts',
+    '.twig',
+    '.txt',
+    '.vue',
+    '.xml',
+    'all',
+);
+define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
+define('PHP_EXTENSIONS_POS', 5);
 
 // исключить из поиска директории
 $ignore_dir = array(
@@ -85,27 +106,6 @@ $sensitive_data_files = array(
     FOLDER . '/wa-config/db.php',
     FOLDER . '/wp-content/plugins/akeebabackupwp/helpers/private/wp-config.php',
 );
-
-// Доступные для выбора расширения файлов
-const FILE_EXTENSIONS = array(
-    '.css',
-    '.html',
-    '.js',
-    '.json',
-    '.md',
-    '.php',
-    '.pug',
-    '.scss',
-    '.tpl',
-    '.ts',
-    '.twig',
-    '.txt',
-    '.vue',
-    '.xml',
-    'all',
-);
-define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
-define('PHP_EXTENSIONS_POS', 5);
 
 // Режимы сканирования
 const MODES = array(
