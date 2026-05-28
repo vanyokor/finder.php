@@ -20,6 +20,7 @@ const FILE_EXTENSIONS = array(
     '.html',
     '.js',
     '.json',
+    '.less',
     '.md',
     '.php',
     '.pug',
@@ -33,7 +34,7 @@ const FILE_EXTENSIONS = array(
     'all',
 );
 define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
-define('PHP_EXTENSIONS_POS', 5);
+define('PHP_EXTENSIONS_POS', 6);
 
 // исключить из поиска директории
 $ignore_dir = array(
