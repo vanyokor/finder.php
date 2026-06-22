@@ -3,7 +3,7 @@
     ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
-const VERSION = '1.5';
+const VERSION = '1.6dev';
 
 // GET параметр, который необходимо передать в скрипт, для его запуска
 const STARTER = 'run';
@@ -169,7 +169,7 @@ function show_select_field($name, $list, $current)
 */
 function show_result($filename, $count, $matches)
 {
-    echo '<section><header>',$filename,' <span>',$count,'</span></header>';
+    echo '<section><header>',$filename,'</header><span>',$count,'</span>';
     foreach ($matches as $match) {
         if ($match) {
             echo '<code>', $match[0], '<b>', $match[1], '</b>', $match[2], '</code>';
@@ -447,17 +447,32 @@ function scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files)
 */
 function static_file($type)
 {
-    if (isset($_SERVER["HTTP_IF_MODIFIED_SINCE"])) {
-        header("HTTP/1.1 304 Not Modified");
+    if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
+        header('HTTP/1.1 304 Not Modified');
         exit;
     }
-    header("Expires: ".gmdate("D, d M Y H:i:s", time() + 365 * 24 * 60 * 60)." GMT");
-    header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
-    header("Cache-Control: immutable");
+    header('Expires: '.gmdate('D, d M Y H:i:s', time() + 365 * 24 * 60 * 60).' GMT');
+    header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+    header('Cache-Control: immutable');
     switch ($type) {
         case 'css':
-            header("Content-Type: text/css; charset=utf-8");
-            echo '*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;margin:10px 30px 60px}form,p,output{text-align:center;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px;position:relative}header{overflow-wrap:break-word;font-weight:700;text-align:center}span{position:absolute;right:0;top:0;padding:5px 15px;background:#d4d9dd;border-radius:0 3px 0 10px;user-select:none}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{medium;background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;top:12px;right:35px;padding:3px;border-radius:3px;border:1px solid #dfdfdf63;user-select:none;background:#bab6b5}aside a{padding:7px;background:#7e7c7c;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;text-align:center;}aside a:hover{opacity:.7;}';
+            header('Content-Type: text/css; charset=utf-8');
+            echo '*,:after,:before{box-sizing:inherit}html{background:#424146;font-family:sans-serif;box-sizing:border-box}body{background:#bab6b5;padding:15px;border-radius:3px;margin:10px 30px 60px}form,p,output{text-align:center;user-select:none}section{margin-top:30px;padding:10px;background:#f1f1f1;border-radius:3px;position:relative}header{overflow-wrap:break-word;font-weight:700;text-align:center;cursor:pointer}span{position:absolute;right:0;top:0;padding:5px 15px;background:#d4d9dd;border-radius:0 3px 0 10px;font-weight:bold;user-select:none}code{width:100%;display:block;background:#d4d9dd;padding:5px;border-radius:3px;margin-top:10px;overflow-wrap:break-word}label{text-align:left;display:block;width:300px;margin:10px auto 0}code b{color:red}details{margin-top:1em}summary:hover{background:#b1b1b1;cursor:pointer}slot{font-size:smaller;overflow-wrap:break-word}ul{padding-left:1em}output{medium;background:#ff4b4b;color:#fff;padding:15px;margin:15px;border-radius:3px;display:block}aside{position:fixed;top:12px;right:35px;padding:3px;border-radius:3px;border:1px solid #dfdfdf63;user-select:none;background:#bab6b5}aside a{padding:7px;background:#7e7c7c;display:inline-block;width:30px;height:30px;border-radius:3px;text-decoration:none;color:#fff;text-align:center;}aside a:hover{opacity:.7;}dialog{position:fixed;top:20px}';
+            break;
+        case 'js':
+            header('Content-Type: application/javascript; charset=utf-8');
+            echo <<<TEXT
+            (function(){"use strict";document.addEventListener("DOMContentLoaded",()=>{
+                const body=document.querySelector("body");
+
+                body.addEventListener("click",(e)=>{
+                    console.log(e.target);
+                });
+
+                if (navigator.clipboard) {
+                }
+            });})();
+            TEXT;
             break;
     }
     exit();
@@ -489,6 +504,7 @@ if (!isset($_GET[STARTER])) {
 }
 
 // Оптимизация списков игнорирования, путем удаления из него отсутствующих на сайте элементов
+$ignoring = array();
 if (IS_POST) {
     $ignoring = scan_ignore_lists($ignore_dir, $ignore_file, $sensitive_data_files);
 }
@@ -670,5 +686,7 @@ if (IS_POST) { ?>
 <a href="#end">⯆</a>
 </aside>
 <?php } ?>
+<dialog>Copied!</dialog>
+<script src="?static=js&v=<?=VERSION?>"></script>
 </body>
 </html>
