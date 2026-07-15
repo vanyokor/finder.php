@@ -393,8 +393,9 @@ function list_recursive($directory, $ignoring, &$interrupted, &$currentDepth)
 function escape_str($text)
 {
     global $ORIGINAL_SYMBOLS, $REPLACED_SYMBOLS;
+    $flag = defined('ENT_SUBSTITUTE') ? ENT_SUBSTITUTE : ENT_IGNORE;
     $text = str_replace($ORIGINAL_SYMBOLS, $REPLACED_SYMBOLS, $text);
-    $text = htmlentities($text, ENT_QUOTES | ENT_SUBSTITUTE);
+    $text = htmlentities($text, ENT_QUOTES | $flag);
     return $text;
 }
 
