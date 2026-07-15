@@ -15,7 +15,7 @@ const FOLDER = '.';
 const SKIP_SYMLINKS = true;
 
 // Доступные для выбора расширения файлов
-const FILE_EXTENSIONS = array(
+$FILE_EXTENSIONS = array(
     '.css',
     '.html',
     '.js',
@@ -33,7 +33,7 @@ const FILE_EXTENSIONS = array(
     '.xml',
     'all',
 );
-define('FILE_EXTENSIONS_COUNT', count(FILE_EXTENSIONS));
+define('FILE_EXTENSIONS_COUNT', count($FILE_EXTENSIONS));
 define('PHP_EXTENSIONS_POS', 6);
 
 // исключить из поиска директории
@@ -109,12 +109,12 @@ $sensitive_data_files = array(
 );
 
 // Режимы сканирования
-const MODES = array(
+$MODES = array(
     'default',
     'case-insensitive',
     'just show all folder names',
 );
-define('MODES_COUNT', count(MODES));
+define('MODES_COUNT', count($MODES));
 define('MODE_CASE_INSENSITIVE', 1);
 define('MODE_SHOW_FOLDER_NAMES', 2);
 
@@ -136,8 +136,8 @@ define('RESULTS_END_POS', 126);
 define('TIME_LIMIT', 55);
 define('SCRIPT_TIMEOUT', 28800);
 
-const ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
-const REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
+$ORIGINAL_SYMBOLS = array("\r\n", "\r", "\n", "\t", '  ', '    ', '    ');
+$REPLACED_SYMBOLS = array(' ', ' ', ' ', '', '', '', '');
 
 define('FIELD_FILE_EXTENSION', 'file_extension');
 define('FIELD_SHOW_CONTENT', 'show_content');
@@ -392,7 +392,8 @@ function list_recursive($directory, $ignoring, &$interrupted, &$currentDepth)
 */
 function escape_str($text)
 {
-    $text = str_replace(ORIGINAL_SYMBOLS, REPLACED_SYMBOLS, $text);
+    global $ORIGINAL_SYMBOLS, $REPLACED_SYMBOLS;
+    $text = str_replace($ORIGINAL_SYMBOLS, $REPLACED_SYMBOLS, $text);
     $text = htmlentities($text, ENT_QUOTES | ENT_SUBSTITUTE);
     return $text;
 }
@@ -472,7 +473,7 @@ function static_file($type)
                 if (navigator.clipboard) {
                 }
             });})();
-            TEXT;
+TEXT;
             break;
     }
     exit();
@@ -558,7 +559,7 @@ define('SEARCH_STR_LEN', function_exists('mb_strlen') ? mb_strlen(SEARCH_STR) : 
 
 // Выбор расширения файла
 $file_extension_id = read_post_or_default(FIELD_FILE_EXTENSION, PHP_EXTENSIONS_POS, FILE_EXTENSIONS_COUNT);
-define('SEARCHED_FILE_EXTENSION', FILE_EXTENSIONS[$file_extension_id]);
+define('SEARCHED_FILE_EXTENSION', $FILE_EXTENSIONS[$file_extension_id]);
 
 // Запуск поиска во всех файлах
 define('SEARCH_IN_ALL', $file_extension_id == (FILE_EXTENSIONS_COUNT - 1));
@@ -602,7 +603,7 @@ ini_set('max_execution_time', '60');
 in 
 <?php
 // Доступные расширения файла
-show_select_field(FIELD_FILE_EXTENSION, FILE_EXTENSIONS, $file_extension_id);
+show_select_field(FIELD_FILE_EXTENSION, $FILE_EXTENSIONS, $file_extension_id);
 unset($file_extension_id);
 ?> 
 <input type="text" placeholder="text" name="search_str" value="<?=htmlentities(SEARCH_STR)?>" maxlength="<?=MAX_SEARCH_LEN - 1?>">
@@ -614,7 +615,7 @@ unset($file_extension_id);
 Scan mode: 
 <?php
 // Режим сканирования
-show_select_field(FIELD_MODE, MODES, $cur_mode);
+show_select_field(FIELD_MODE, $MODES, $cur_mode);
 unset($cur_mode);
 ?>
 </label>
