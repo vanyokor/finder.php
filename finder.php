@@ -254,7 +254,7 @@ function f2_on_shutdown()
     if (isset($GLOBALS['f2_ctx'])) {
         $ctx =& $GLOBALS['f2_ctx'];
         $ctx['truncated']['fatal'] = true;
-        $ctx['error'] = 'поиск прерван ошибкой PHP: ' . $message . '; показано найденное до неё';
+        $ctx['error'] = 'поиск прерван ошибкой PHP: ' . $message . ', показано найденное до неё';
         f2_result($ctx);
     }
     f2_json(500, array('error' => 'ошибка PHP: ' . $message));
@@ -340,7 +340,7 @@ function f2_delete_now()
 {
     if (!f2_self_delete()) {
         f2_json(500, array(
-            'error' => 'удалить скрипт не удалось (нет прав на запись в папку или unlink отключена): удалите его вручную',
+            'error' => 'удалить скрипт не удалось: удалите его вручную',
             'deleted' => false,
         ));
     }
@@ -2071,7 +2071,7 @@ function f2_page_html()
             <input id="context" type="number" min="0" value="2"></label>
           <label>Не больше результатов
             <input id="max" type="number" min="1"></label>
-          <label class="wide">Исключить (по маске на строку; без / — имя на любой глубине, с / — путь от корня)
+          <label class="wide">Исключить (по маске на строку, без / — имя на любой глубине, с / — путь от корня)
             <textarea id="exclude" class="mono" rows="2" spellcheck="false" placeholder="upload&#10;*.log"></textarea></label>
         </div>
         <p class="hint">Папки кеша и зависимостей (vendor, node_modules) при обходе пропускаются, но если указать их в «Папка или файл», поиск по ним идёт. Ключи, дампы и бэкапы не читаются никогда.</p>
