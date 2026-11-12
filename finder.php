@@ -5,13 +5,8 @@
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
 */
 
-// TODO удалить к релизу
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
 // Ключ запуска (GET параметр ?run=*)
-define('F2_RUN_KEY', '__PASTE_UI_KEY_HERE__');
+define('F2_RUN_KEY', '__PASTE_RUN_KEY_HERE__');
 // Токен доступа
 define('F2_TOKEN', '__PASTE_TOKEN_HERE__');
 
@@ -111,7 +106,7 @@ f2_main();
 function f2_main()
 {
     if (function_exists('ini_set')) {
-        // @ini_set('display_errors', '0'); TODO вернуть к релизу
+        @ini_set('display_errors', '0');
         @ini_set('memory_limit', '1G');
         @ini_set('max_execution_time', '60');
     }
@@ -1866,19 +1861,7 @@ function f2_secret_rules($config)
     $key = '[\w.\-]{0,64}' . $name;
     $value = '[^\x00-\x20\'"\x7f-\xff]{4,512}';
     $rules = array(
-        array('/(?<![A-Za-z0-9_\-])(?:'
-            . '6L[0-9A-Za-z_\-]{38}'
-            . '|(?:sk|rk)_(?:live|test)_[0-9A-Za-z]{16,}|whsec_[0-9A-Za-z]{16,}'
-            . '|sk-(?=[\w\-]*\d)(?=[\w\-]*[A-Z])[\w\-]{20,}'
-            . '|(?:AKIA|ASIA)[0-9A-Z]{16}'
-            . '|AIza[0-9A-Za-z_\-]{35}'
-            . '|gh[pousr]_[A-Za-z0-9]{36,}|github_pat_\w{22,}|glpat-[\w\-]{20,}'
-            . '|xox[abposr]-[A-Za-z0-9\-]{10,}'
-            . '|SG\.[\w\-]{16,}\.[\w\-]{16,}'
-            . '|\d{8,10}:AA[\w\-]{33}'
-            . '|y0_[\w\-]{40,}|AQAAAAA[\w\-]{30,}'
-            . '|eyJ[\w\-]{8,}\.eyJ[\w\-]{8,}\.[\w\-]{8,}'
-            . ')(?![A-Za-z0-9_\-])/', 0),
+        array('/(?<![A-Za-z0-9_\-])(?:6L[0-9A-Za-z_\-]{38}|(?:sk|rk)_(?:live|test)_[0-9A-Za-z]{16,}|whsec_[0-9A-Za-z]{16,}|sk-(?=[\w\-]*\d)(?=[\w\-]*[A-Z])[\w\-]{20,}|(?:AKIA|ASIA)[0-9A-Z]{16}|AIza[0-9A-Za-z_\-]{35}|gh[pousr]_[A-Za-z0-9]{36,}|github_pat_\w{22,}|glpat-[\w\-]{20,}|xox[abposr]-[A-Za-z0-9\-]{10,}|SG\.[\w\-]{16,}\.[\w\-]{16,}|\d{8,10}:AA[\w\-]{33}|y0_[\w\-]{40,}|AQAAAAA[\w\-]{30,}|eyJ[\w\-]{8,}\.eyJ[\w\-]{8,}\.[\w\-]{8,})(?![A-Za-z0-9_\-])/', 0),
         array('/-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----(.+?)-----END [A-Z0-9 ]*PRIVATE KEY-----/s', 1),
         array('/(?<![a-z0-9+.\-])[a-z][a-z0-9+.\-]{0,20}:\/\/[^\s:\/@\'"<>]{1,256}:([^\s\/@\'"<>]{1,256})@/i', 1),
         array('/\b(?:Bearer|Basic)\s+([A-Za-z0-9._~+\/=\-]{16,})/', 1),
@@ -2085,7 +2068,7 @@ function f2_page_html()
           <label class="wide">Исключить (по маске на строку, без / — имя на любой глубине, с / — путь от корня)
             <textarea id="exclude" class="mono" rows="2" spellcheck="false" placeholder="upload&#10;*.log"></textarea></label>
         </div>
-        <p class="hint">Папки кеша и зависимостей (vendor, node_modules) при обходе пропускаются, но если указать их в «Папка или файл», поиск по ним идёт. Ключи, дампы и бэкапы не читаются никогда.</p>
+        <p class="hint">Папки кеша и зависимостей (vendor, node_modules) при обходе пропускаются, но если указать их в поле «Папка или файл», поиск по ним заработает. Ключи, дампы и бэкапы не читаются никогда.</p>
       </details>
     </form>
   </section>
