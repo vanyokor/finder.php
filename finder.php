@@ -1,4 +1,5 @@
 <?php
+
 /*
     ❗Пожалуйста, в конце работ, не забывайте удалять скрипт с сайта❗
     Инструкция по работе: https://github.com/vanyokor/finder.php/blob/main/README.md
@@ -9,15 +10,15 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
-// Ключ запуска, для GET параметра ?run=
-define('F2_UI_KEY', '__PASTE_UI_KEY_HERE__');
-// Ключ авторизации
+// Ключ запуска (GET параметр ?run=*)
+define('F2_RUN_KEY', '__PASTE_UI_KEY_HERE__');
+// Токен доступа
 define('F2_TOKEN', '__PASTE_TOKEN_HERE__');
 
 // Версия скрипта
 define('F2_VERSION', '2.0');
 
-// Стандартная маска файлов 
+// Стандартная маска файлов
 define('F2_DEFAULT_FILE_MASK', '*.{php,js}');
 
 define('F2_TTL', 28800);
@@ -41,9 +42,9 @@ define('F2_BINARY_CONTROL', 0.05);
 define('F2_READ_SENSITIVE', true);
 define('F2_MASK_SECRETS', true);
 define('F2_TOKEN_MIN_LENGTH', 10);
-define('F2_UI_KEY_MIN_LENGTH', 5);
+define('F2_RUN_KEY_MIN_LENGTH', 5);
 define('F2_TOKEN_PLACEHOLDER', '__PASTE_' . 'TOKEN_HERE__');
-define('F2_UI_KEY_PLACEHOLDER', '__PASTE_' . 'UI_KEY_HERE__');
+define('F2_RUN_KEY_PLACEHOLDER', '__PASTE_' . 'UI_KEY_HERE__');
 
 /*
     Запрещённые имена файлов и папок
@@ -96,8 +97,8 @@ function f2_ignored_dirs()
         'vqcache',
         'seo_backup',
         'system/storage',
-        'bitrix/js', 
-        'bitrix/updates', 
+        'bitrix/js',
+        'bitrix/updates',
         'bitrix/modules/*/install',
     );
 }
@@ -252,7 +253,7 @@ function f2_on_shutdown()
     }
     $message = f2_fatal_message($error);
     if (isset($GLOBALS['f2_ctx'])) {
-        $ctx =& $GLOBALS['f2_ctx'];
+        $ctx = & $GLOBALS['f2_ctx'];
         $ctx['truncated']['fatal'] = true;
         $ctx['error'] = 'поиск прерван ошибкой PHP: ' . $message . ', показано найденное до неё';
         f2_result($ctx);
@@ -362,7 +363,7 @@ function f2_token_ok()
     }
     $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : '';
     if ($method === 'GET' && f2_ui_key_ok() && isset($_GET['run']) && is_string($_GET['run'])) {
-        return f2_secret_equals(F2_UI_KEY, $_GET['run']);
+        return f2_secret_equals(F2_RUN_KEY, $_GET['run']);
     }
     return false;
 }
@@ -383,7 +384,7 @@ function f2_secret_equals($known, $given)
 */
 function f2_ui_key_ok()
 {
-    return F2_UI_KEY !== F2_UI_KEY_PLACEHOLDER && strlen(F2_UI_KEY) >= F2_UI_KEY_MIN_LENGTH && F2_UI_KEY !== F2_TOKEN;
+    return F2_RUN_KEY !== F2_RUN_KEY_PLACEHOLDER && strlen(F2_RUN_KEY) >= F2_RUN_KEY_MIN_LENGTH && F2_RUN_KEY !== F2_TOKEN;
 }
 
 /*
@@ -638,7 +639,7 @@ function f2_search($started)
             'too_large_files' => array(),
         ),
     );
-    $ctx =& $GLOBALS['f2_ctx'];
+    $ctx = & $GLOBALS['f2_ctx'];
 
     $rel = implode('/', $parts);
     if (is_dir($real)) {
@@ -877,7 +878,7 @@ function f2_split_path($path, $literalBackslash)
 }
 
 /*
-    Составление корректного пути, независимо от ОС 
+    Составление корректного пути, независимо от ОС
 */
 function f2_resolve_path($base, $parts)
 {
