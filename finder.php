@@ -141,7 +141,9 @@ function f2_main()
         f2_page();
     }
     if ($method !== 'POST') {
-        f2_json(405, array('error' => 'поддерживаются только GET, POST'));
+        f2_json(405, array(
+            'error' => 'поддерживаются только GET, POST'
+        ));
     }
     if (f2_param('action') === 'status') {
         f2_info();
@@ -191,10 +193,7 @@ function f2_deny()
     f2_common_headers();
     f2_status(404);
     header('Content-Type: text/html; charset=iso-8859-1');
-    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n"
-        . "<html><head>\n<title>404 Not Found</title>\n</head><body>\n"
-        . "<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n"
-        . "</body></html>\n";
+    echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n</body></html>\n";
     exit;
 }
 
@@ -258,7 +257,9 @@ function f2_on_shutdown()
         $ctx['error'] = 'поиск прерван ошибкой PHP: ' . $message . ', показано найденное до неё';
         f2_result($ctx);
     }
-    f2_json(500, array('error' => 'ошибка PHP: ' . $message));
+    f2_json(500, array(
+        'error' => 'ошибка PHP: ' . $message
+    ));
 }
 
 /*
@@ -284,7 +285,9 @@ function f2_fatal_message($error)
 */
 function f2_error($message)
 {
-    f2_json(400, array('error' => $message));
+    f2_json(400, array(
+        'error' => $message
+    ));
 }
 
 /*
@@ -346,7 +349,9 @@ function f2_delete_now()
         ));
     }
 
-    f2_json(200, array('deleted' => true));
+    f2_json(200, array(
+        'deleted' => true
+    ));
 }
 
 /*
@@ -502,7 +507,9 @@ function f2_search($started)
 {
     $missing = f2_missing_functions();
     if ($missing) {
-        f2_json(500, array('error' => 'на хостинге отключены функции PHP: ' . implode(', ', $missing)));
+        f2_json(500, array(
+            'error' => 'на хостинге отключены функции PHP: ' . implode(', ', $missing)
+        ));
     }
     $deadline = $started + f2_time_budget();
 
@@ -1958,10 +1965,13 @@ function f2_page()
         . ' data-self-delete-available="' . $selfDeleteAvailable . '"';
     f2_common_headers();
     f2_status(200);
+
+    // Защитные заголовки
     header('Content-Type: text/html; charset=utf-8');
     header('Content-Security-Policy: ' . $csp);
     header('Referrer-Policy: no-referrer');
     header('X-Frame-Options: DENY');
+
     echo strtr(f2_page_html(), array(
         '{{VERSION}}' => F2_VERSION,
         '{{CSS}}' => $css,
